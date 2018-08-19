@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="AppSettingManager.cs" />
     <Compile Remove="StaffMap.cs" />
   </ItemGroup>
 

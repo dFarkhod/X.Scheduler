@@ -1,0 +1,18 @@
+V extract staff list from database
+
+API:
+V add logger
+fix the issue with insertRange for scheduleHistory
+fix the issue with my rule engine
+use dictionary instead of list in my rules methods
+make each rule to be located in a separate dll
+during startup load all the rule dlls
+create different test cases for cheking 4 rules
+check about rules links
+
+UI:
+in angular create httpService
+create scheduleService and inherit from it
+create schedule component and call scheduleService
+display data in li
+

@@ -1,6 +1,4 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace X.Scheduler.Tests
 {
@@ -16,9 +14,10 @@ namespace X.Scheduler.Tests
             //Assert.IsNotNull(randomList);
         }
         [TestMethod]
-        public void TestGetSchedule()
+        public void TestScheduleGenerator()
         {
-            List<int> result = ScheduleGenerator.Instance.GetSchedule(Constants.SCHEDULE_DAYS * 2, 10).ToList();
+            ScheduleGenerator.Instance.GenerateNewSchedule();
+
             //ScheduleGenerator sf = new ScheduleGenerator();
             //List<int> randomList = sf.GetRandomNumbersList(Constants.SCHEDULE_DAYS * 2, 10);
             //Assert.IsNotNull(randomList);

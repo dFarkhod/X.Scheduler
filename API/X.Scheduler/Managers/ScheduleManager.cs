@@ -1,37 +1,98 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Timers;
+using X.Scheduler.Data;
 using X.Scheduler.Data.Entitites;
 
-//TODO: Create a poller which runs every 1 hour by the timer and checks whether need to generate a new schedule by checking table and first day of the week
 
-namespace X.Scheduler
+namespace X.Scheduler.Managers
 {
-    public sealed class ScheduleGenerator
+    public sealed class ScheduleManager
     {
-        private static readonly Lazy<ScheduleGenerator> lazy = new Lazy<ScheduleGenerator>(() => new ScheduleGenerator());
+        private static readonly Lazy<ScheduleManager> lazy = new Lazy<ScheduleManager>(() => new ScheduleManager());
 
-        public static ScheduleGenerator Instance { get { return lazy.Value; } }
+        public static ScheduleManager Instance { get { return lazy.Value; } }
 
-        private List<Staff> staffs = new List<Staff>();
+        private Timer timer;
+        private IServiceCollection services;
 
-        public ScheduleGenerator()
+        public ScheduleManager()
         {
-            staffs = new List<Staff>();
+
         }
 
+        public void Initialize(IServiceCollection services)
+        {
+            this.services = services;
+            TimeSpan handleInterval = new TimeSpan(1, 0, 0);
+            TimeSpan.TryParse(ConfigurationManager.AppSetting["ScheduleGeneratorInterval"], out handleInterval);
+            timer = new Timer(handleInterval.TotalMilliseconds);
+            timer.Elapsed += new ElapsedEventHandler(HandleTimer_Elapsed);
+            timer.Start();
+            HandleTimer_Elapsed(this, null);
+        }
 
-        public void GenerateSchedule(IServiceCollection services)
+        private void HandleTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            try
+            {
+                timer.Stop();
+                Handle();
+            }
+            catch (Exception ex)
+            {
+                //TODO: Log exception by logger
+            }
+            finally
+            {
+                timer.Start();
+            }
+        }
+
+        private void Handle()
+        {
+            try
+            {
+                HousekeepSchedules();
+                GenerateNewSchedule();
+            }
+            catch (Exception ex)
+            {
+                //TODO: Log exception by logger
+            }
+        }
+
+        private void HousekeepSchedules()
+        {
+            //TODO: Move data from Schedule to ScheduleHistory
+            IRepository<ScheduleHistory> scheduleHistoryRepo = services.BuildServiceProvider().GetService<IRepository<ScheduleHistory>>();
+            IRepository<Schedule> scheduleRepo = services.BuildServiceProvider().GetService<IRepository<Schedule>>();
+            var existingSchedules = scheduleRepo.GetAll().ToList();
+            var scheduleHistoryItems = new List<ScheduleHistory>();
+            foreach (var existingSchedule in existingSchedules)
+            {
+                ScheduleHistory shItem = new ScheduleHistory();
+                shItem.PreviousId = existingSchedule.Id;
+                shItem.Shift = existingSchedule.Shift;
+                shItem.StaffId = existingSchedule.StaffId;
+                shItem.Date = existingSchedule.Date;
+                //scheduleHistoryRepo.Insert(shItem);
+                scheduleHistoryItems.Add(shItem);
+            }
+            scheduleHistoryRepo.InsertRange(scheduleHistoryItems);
+            scheduleRepo.DeleteAll("Schedule");
+        }
+
+        public void GenerateNewSchedule()
         {
             IRepository<Staff> staffRepo = services.BuildServiceProvider().GetService<IRepository<Staff>>();
             IRepository<Schedule> scheduleRepo = services.BuildServiceProvider().GetService<IRepository<Schedule>>();
 
             List<Schedule> scheduleList = new List<Schedule>();
 
-            staffs = staffRepo.GetAllWithChildren().ToList();
+            var staffs = staffRepo.GetAllWithChildren().ToList();
             if (staffs == null || staffs.Count <= 0)
                 throw new Exception("No any staff defined! Please define staff.");
 
@@ -42,11 +103,13 @@ namespace X.Scheduler
             List<int> results = GetRandomNumbersListWtihAppliedRule(Constants.SCHEDULE_DAYS * 2, staffs.Count);
             List<int> results2 = ApplyPostRule(results, staffs.Count);
 
-
+            // TODO: need to move this part to test project
+            /*
             Dictionary<int, int> dic = new Dictionary<int, int>();
             foreach (var item in results2)
             {
                 int count = results2.Where(x => x.Equals(item)).Count();
+
                 if (count == 1)
                 {
                     throw new Exception("Shifts caount cannot be 1. It shoud be at least 2."); // rule 3 broken
@@ -58,7 +121,7 @@ namespace X.Scheduler
             {
                 Console.WriteLine(item.Key + "," + item.Value);
             }
-
+            */
 
 
 
@@ -70,7 +133,6 @@ namespace X.Scheduler
             int currentItemIndex = 0;
             foreach (var item in results2)
             {
-
                 if (staffs[item] != null)
                 {
                     Schedule sch = new Schedule();
@@ -123,14 +185,6 @@ namespace X.Scheduler
             }
             return foundDate;
 
-        }
-
-        private List<Staff> GetAllStaff()
-        {
-            List<Staff> staffList = new List<Staff>();
-            string fileContent = File.ReadAllText("Data\\staff.json");
-            staffList = JsonConvert.DeserializeObject<List<Staff>>(fileContent);
-            return staffList;
         }
 
         private List<int> GetRandomNumbersListWtihAppliedRule(int itemsCount, int staffCount)

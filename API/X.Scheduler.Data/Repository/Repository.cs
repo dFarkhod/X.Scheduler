@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using X.Scheduler.Data.Entitites;
 
-namespace X.Scheduler
+namespace X.Scheduler.Data
 {
     public class Repository<T> : IRepository<T> where T : BaseEntity
     {
@@ -38,12 +38,28 @@ namespace X.Scheduler
             context.SaveChanges();
         }
 
+        /// <summary>
+        /// TODO: Fix this method
+        /// </summary>
+        /// <param name="entities"></param>
+        public void InsertRange(List<T> entities)
+        {
+            if (entities == null)
+            {
+                throw new ArgumentNullException("entities");
+            }
+            entities.AddRange(entities);
+            context.AttachRange(entities);
+            context.SaveChanges();
+        }
+
         public void Update(T entity)
         {
             if (entity == null)
             {
                 throw new ArgumentNullException("entity");
             }
+
             context.SaveChanges();
         }
 
@@ -55,6 +71,15 @@ namespace X.Scheduler
             }
             entities.Remove(entity);
             context.SaveChanges();
+        }
+
+        public void DeleteAll(string tableName)
+        {
+            var sql = $"TRUNCATE TABLE [{tableName}]";
+            context.Database.ExecuteSqlCommand(sql);
+
+            // var sql = @"TRUNCATE TABLE @TableName";
+            //context.Database.ExecuteSqlCommand(sql, new SqlParameter("@TableName", tableName));
         }
 
         public IEnumerable<T> GetAllWithChildren(params Expression<Func<T, object>>[] includeProperties)
