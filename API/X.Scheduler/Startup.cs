@@ -21,6 +21,8 @@ namespace X.Scheduler
             services.AddMvc();
             services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultCS")));
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            ScheduleGenerator.Instance.GenerateSchedule(services);
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

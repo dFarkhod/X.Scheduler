@@ -4,7 +4,7 @@ namespace X.Scheduler
 {
     public class ListHelper
     {
-        public static IEnumerable<IEnumerable<T>> Split<T>(IEnumerable<T> source, int chunkSize)
+        public static IEnumerable<List<T>> Split<T>(List<T> source, int chunkSize)
         {
             var chunk = new List<T>(chunkSize);
             foreach (var item in source)
