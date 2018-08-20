@@ -16,7 +16,7 @@ namespace X.Scheduler.Tests
         [TestMethod]
         public void TestScheduleGenerator()
         {
-            ScheduleGenerator.Instance.GenerateNewSchedule();
+            //ScheduleGenerator.Instance.GenerateNewSchedule();
 
             //ScheduleGenerator sf = new ScheduleGenerator();
             //List<int> randomList = sf.GetRandomNumbersList(Constants.SCHEDULE_DAYS * 2, 10);

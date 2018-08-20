@@ -1,4 +1,6 @@
 ﻿
+using Newtonsoft.Json;
+
 namespace X.Scheduler.Models
 {
     public class ScheduleViewModel
@@ -6,25 +8,27 @@ namespace X.Scheduler.Models
 
         public ScheduleViewModel(string staffFirstName, string staffLastName, string date, short shift)
         {
-            StaffFirstName = staffFirstName;
-            StaffLastName = staffLastName;
+            this.staffFirstName = staffFirstName;
+            this.staffLastName = staffLastName;
             Date = date;
             Shift = shift;
         }
 
-        public string StaffFirstName { get; set; }
+        [JsonIgnore]
+        private string staffFirstName { get; set; }
 
-        public string StaffLastName { get; set; }
+        [JsonIgnore]
+        private string staffLastName { get; set; }
 
         public string Date { get; set; }
 
         public short Shift { get; set; }
 
-        public string StaffFullName
+        public string Staff
         {
             get
             {
-                return string.Concat(StaffFirstName, " ", StaffLastName);
+                return string.Concat(staffFirstName, " ", staffLastName);
             }
         }
     }

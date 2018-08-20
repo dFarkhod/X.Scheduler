@@ -5,9 +5,15 @@ namespace X.Scheduler.Data
 {
     public class ApplicationContext : DbContext
     {
+        public DbSet<Schedule> Schedule { get; set; }
+        public DbSet<ScheduleHistory> ScheduleHistory { get; set; }
+        public DbSet<Staff> Staff { get; set; }
+
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
+
         }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

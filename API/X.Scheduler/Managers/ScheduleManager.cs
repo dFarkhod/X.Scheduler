@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,26 +11,24 @@ namespace X.Scheduler.Managers
 {
     public sealed class ScheduleManager
     {
-        private static readonly Lazy<ScheduleManager> lazy = new Lazy<ScheduleManager>(() => new ScheduleManager());
+        private Timer Timer;
+        private ApplicationContext AppContext = null;
+        private DateTime FirstWorkingDay = DateTime.Today;
+        private List<Schedule> ActiveSchedule = new List<Schedule>();
 
-        public static ScheduleManager Instance { get { return lazy.Value; } }
-
-        private Timer timer;
-        private IServiceCollection services;
-
-        public ScheduleManager()
+        public ScheduleManager(ApplicationContext appContext)
         {
-
+            AppContext = appContext;
         }
 
-        public void Initialize(IServiceCollection services)
+        public void Initialize()
         {
-            this.services = services;
+            FirstWorkingDay = GetFirstWorkingDayOfWeek();
             TimeSpan handleInterval = new TimeSpan(1, 0, 0);
             TimeSpan.TryParse(ConfigurationManager.AppSetting["ScheduleGeneratorInterval"], out handleInterval);
-            timer = new Timer(handleInterval.TotalMilliseconds);
-            timer.Elapsed += new ElapsedEventHandler(HandleTimer_Elapsed);
-            timer.Start();
+            Timer = new Timer(handleInterval.TotalMilliseconds);
+            Timer.Elapsed += new ElapsedEventHandler(HandleTimer_Elapsed);
+            Timer.Start();
             HandleTimer_Elapsed(this, null);
         }
 
@@ -38,7 +36,7 @@ namespace X.Scheduler.Managers
         {
             try
             {
-                timer.Stop();
+                Timer.Stop();
                 Handle();
             }
             catch (Exception ex)
@@ -47,7 +45,7 @@ namespace X.Scheduler.Managers
             }
             finally
             {
-                timer.Start();
+                Timer.Start();
             }
         }
 
@@ -66,42 +64,42 @@ namespace X.Scheduler.Managers
 
         private void HousekeepSchedules()
         {
-            //TODO: Move data from Schedule to ScheduleHistory
-            IRepository<ScheduleHistory> scheduleHistoryRepo = services.BuildServiceProvider().GetService<IRepository<ScheduleHistory>>();
-            IRepository<Schedule> scheduleRepo = services.BuildServiceProvider().GetService<IRepository<Schedule>>();
-            var existingSchedules = scheduleRepo.GetAll().ToList();
-            var scheduleHistoryItems = new List<ScheduleHistory>();
-            foreach (var existingSchedule in existingSchedules)
+            if (AppContext.Schedule == null)
+                return;
+
+            if (AppContext.Schedule.Count() == 0)
+                return;
+
+
+            var latestScheduleRecord = AppContext.Schedule.Max(s => s.Date);
+            if (latestScheduleRecord != null && latestScheduleRecord < FirstWorkingDay)
             {
-                ScheduleHistory shItem = new ScheduleHistory();
-                shItem.PreviousId = existingSchedule.Id;
-                shItem.Shift = existingSchedule.Shift;
-                shItem.StaffId = existingSchedule.StaffId;
-                shItem.Date = existingSchedule.Date;
-                //scheduleHistoryRepo.Insert(shItem);
-                scheduleHistoryItems.Add(shItem);
+                var scheduleHistoryItems = new List<ScheduleHistory>();
+                var existingSchedules = AppContext.Schedule;
+                foreach (var existingSchedule in existingSchedules)
+                {
+                    ScheduleHistory shItem = new ScheduleHistory();
+                    shItem.PreviousId = existingSchedule.Id;
+                    shItem.Shift = existingSchedule.Shift;
+                    shItem.StaffId = existingSchedule.StaffId;
+                    shItem.Date = existingSchedule.Date;
+                    scheduleHistoryItems.Add(shItem);
+                }
+                AppContext.ScheduleHistory.AddRange(scheduleHistoryItems);
+
+                var truncateScheduleTable = "TRUNCATE TABLE [Schedule];";
+                AppContext.Database.ExecuteSqlCommand(truncateScheduleTable);
+                AppContext.SaveChanges();
             }
-            scheduleHistoryRepo.InsertRange(scheduleHistoryItems);
-            scheduleRepo.DeleteAll("Schedule");
         }
 
         public void GenerateNewSchedule()
         {
-            IRepository<Staff> staffRepo = services.BuildServiceProvider().GetService<IRepository<Staff>>();
-            IRepository<Schedule> scheduleRepo = services.BuildServiceProvider().GetService<IRepository<Schedule>>();
+            ValidateStaffsCount();
 
-            List<Schedule> scheduleList = new List<Schedule>();
-
-            var staffs = staffRepo.GetAllWithChildren().ToList();
-            if (staffs == null || staffs.Count <= 0)
-                throw new Exception("No any staff defined! Please define staff.");
-
-            if (staffs.Count < 2)
-                throw new Exception("Please define at least two staffs");
-
-
-            List<int> results = GetRandomNumbersListWtihAppliedRule(Constants.SCHEDULE_DAYS * 2, staffs.Count);
-            List<int> results2 = ApplyPostRule(results, staffs.Count);
+            List<Staff> staffs = AppContext.Staff.ToList();
+            List<int> results = GetRandomNumbersListWtihAppliedRule();
+            List<int> results2 = ApplyPostRule(results);
 
             // TODO: need to move this part to test project
             /*
@@ -123,51 +121,50 @@ namespace X.Scheduler.Managers
             }
             */
 
-
-
-
-
-            DateTime FirstWorkingDay = GetFirstWorkingDayOfWeek();
-
-            // first populate first shift, then second
             int currentItemIndex = 0;
+            DateTime ShiftDate = FirstWorkingDay;
             foreach (var item in results2)
             {
                 if (staffs[item] != null)
                 {
                     Schedule sch = new Schedule();
                     sch.StaffId = staffs[item].Id;
-                    if (scheduleList.Count < 1)
-                        sch.Date = FirstWorkingDay;
-                    else
-                        sch.Date = FirstWorkingDay.AddDays(currentItemIndex);
 
-                    sch.Shift = Shift.First;
-                    scheduleList.Add(sch);
+                    if (currentItemIndex == 0 || currentItemIndex % 2 == 0)
+                    {
+                        sch.Shift = Shift.First;
+                    }
+                    else
+                    {
+                        sch.Shift = Shift.Second;
+                    }
+
+                    sch.Date = ShiftDate;
+                    ActiveSchedule.Add(sch);
+
+
+                    if (currentItemIndex > 0 && currentItemIndex % 2 != 0)
+                        ShiftDate = ShiftDate.AddDays(1);
                 }
-                else
-                {
-                    // retrieve again from the beginning
-                }
+
                 currentItemIndex++;
             }
-
-            // TODO: Create a single insert
-            // TODO: Move existing schedule into ScheduleHistory table before insert
-            foreach (var item in scheduleList)
-            {
-                scheduleRepo.Insert(item);
-            }
-
-            // string serializedSchedule = JsonConvert.SerializeObject(scheduleList);
-            // File.WriteAllText("Data\\Schedule.json", serializedSchedule); 
+            AppContext.Schedule.AddRange(ActiveSchedule);
+            AppContext.SaveChanges();
         }
 
-        // TODO: iMPLEMENT RULES AS STATED IN:
-        // https://stackoverflow.com/questions/6488034/how-to-implement-a-rule-engine
-        // https://mobiusstraits.com/2015/08/12/expression-trees/
-        // CREATE NEW TABLES RULES in the database and retrieve them in startup
+        private bool ValidateStaffsCount()
+        {
+            if (AppContext.Staff == null || !AppContext.Staff.Any())
+            {
+                throw new Exception("No any staff defined! Please define staff.");
+            }
 
+            if (AppContext.Staff.Count() < 2)
+                throw new Exception("Please define at least two staffs");
+
+            return true;
+        }
 
         private DateTime GetFirstWorkingDayOfWeek()
         {
@@ -187,11 +184,13 @@ namespace X.Scheduler.Managers
 
         }
 
-        private List<int> GetRandomNumbersListWtihAppliedRule(int itemsCount, int staffCount)
+        private List<int> GetRandomNumbersListWtihAppliedRule()
         {
             var randomNumbers = new List<int>();
             var randomizer = new Random();
             int number = 0;
+            int itemsCount = Constants.SCHEDULE_DAYS * 2;
+            int staffCount = AppContext.Staff.Count();
 
             for (int i = 0; i < itemsCount; i++)
             {
@@ -236,11 +235,12 @@ namespace X.Scheduler.Managers
             return number;
         }
 
-        private List<int> ApplyPostRule(List<int> shifts, int staffCount)
+        private List<int> ApplyPostRule(List<int> shifts)
         {
             List<int> shiftsWithPostRules = new List<int>();
             List<int> empsWithOneShift = new List<int>();
             List<int> empsWithThreeShifts = new List<int>();
+            int staffCount = AppContext.Staff.Count();
             shiftsWithPostRules = new List<int>(shifts);
 
             for (int staffNum = 0; staffNum < staffCount; staffNum++)

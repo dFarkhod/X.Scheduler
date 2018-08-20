@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
 using X.Scheduler.Data;
 using X.Scheduler.Managers;
 
@@ -23,9 +24,11 @@ namespace X.Scheduler
         {
             services.AddMvc();
             services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultCS")));
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            services.AddSingleton(ScheduleManager.Instance);
-            ScheduleManager.Instance.Initialize(services);
+            IServiceProvider provider = services.BuildServiceProvider();
+            var appContext = provider.GetRequiredService<ApplicationContext>();
+            ScheduleManager sm = new ScheduleManager(appContext);
+            services.AddSingleton(sm);
+            sm.Initialize();
 
         }
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Linq;
 using X.Scheduler.Data;
 using X.Scheduler.Data.Entitites;
 using X.Scheduler.Models;
@@ -9,28 +10,25 @@ namespace X.Scheduler.Controllers
     [Route("api/[controller]")]
     public class ScheduleController : Controller
     {
-        private IRepository<Schedule> scheduleRepo;
-        private IRepository<Staff> staffRepo;
-
-        public ScheduleController(IRepository<Schedule> schedules, IRepository<Staff> staffs)
+        private ApplicationContext AppContext = null;
+        public ScheduleController(ApplicationContext appContext)
         {
-            scheduleRepo = schedules;
-            staffRepo = staffs;
+            AppContext = appContext;
         }
-
 
         // GET api/values
         [HttpGet]
         public List<ScheduleViewModel> Get()
         {
-            IEnumerable<Schedule> scheduleWithStaff = scheduleRepo.GetAllWithChildren(s => s.Staff);
+            IEnumerable<Schedule> scheduleWithStaff = AppContext.Schedule;
             List<ScheduleViewModel> result = new List<ScheduleViewModel>();
             foreach (var sws in scheduleWithStaff)
             {
+                var staff = AppContext.Staff.FirstOrDefault(s => s.Id == sws.StaffId);
                 var svm = new
                     ScheduleViewModel(
-                    sws.Staff.FirstName,
-                    sws.Staff.LastName,
+                    staff.FirstName,
+                    staff.LastName,
                     sws.Date.ToString("yyyy-MM-dd"),
                     (short)sws.Shift);
 
