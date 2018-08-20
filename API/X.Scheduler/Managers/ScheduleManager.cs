@@ -15,6 +15,7 @@ namespace X.Scheduler.Managers
         private ApplicationContext AppContext = null;
         private DateTime FirstWorkingDay = DateTime.Today;
         private List<Schedule> ActiveSchedule = new List<Schedule>();
+        private bool NeedToGenerateNewSchedule = true;
 
         public ScheduleManager(ApplicationContext appContext)
         {
@@ -23,7 +24,6 @@ namespace X.Scheduler.Managers
 
         public void Initialize()
         {
-            FirstWorkingDay = GetFirstWorkingDayOfWeek();
             TimeSpan handleInterval = new TimeSpan(1, 0, 0);
             TimeSpan.TryParse(ConfigurationManager.AppSetting["ScheduleGeneratorInterval"], out handleInterval);
             Timer = new Timer(handleInterval.TotalMilliseconds);
@@ -53,6 +53,7 @@ namespace X.Scheduler.Managers
         {
             try
             {
+                FirstWorkingDay = GetFirstWorkingDayOfWeek();
                 HousekeepSchedules();
                 GenerateNewSchedule();
             }
@@ -64,12 +65,11 @@ namespace X.Scheduler.Managers
 
         private void HousekeepSchedules()
         {
-            if (AppContext.Schedule == null)
-                return;
-
             if (AppContext.Schedule.Count() == 0)
+            {
+                NeedToGenerateNewSchedule = true;
                 return;
-
+            }
 
             var latestScheduleRecord = AppContext.Schedule.Max(s => s.Date);
             if (latestScheduleRecord != null && latestScheduleRecord < FirstWorkingDay)
@@ -90,11 +90,19 @@ namespace X.Scheduler.Managers
                 var truncateScheduleTable = "TRUNCATE TABLE [Schedule];";
                 AppContext.Database.ExecuteSqlCommand(truncateScheduleTable);
                 AppContext.SaveChanges();
+                NeedToGenerateNewSchedule = true;
+            }
+            else
+            {
+                NeedToGenerateNewSchedule = false;
             }
         }
 
         public void GenerateNewSchedule()
         {
+            if (!NeedToGenerateNewSchedule)
+                return;
+
             ValidateStaffsCount();
 
             List<Staff> staffs = AppContext.Staff.ToList();
@@ -155,7 +163,7 @@ namespace X.Scheduler.Managers
 
         private bool ValidateStaffsCount()
         {
-            if (AppContext.Staff == null || !AppContext.Staff.Any())
+            if (!AppContext.Staff.Any())
             {
                 throw new Exception("No any staff defined! Please define staff.");
             }
