@@ -17,6 +17,9 @@ create different test cases for cheking 4 rules
 https://stackoverflow.com/questions/6488034/how-to-implement-a-rule-engine
 https://mobiusstraits.com/2015/08/12/expression-trees/
 CREATE NEW TABLES RULES in the database and retrieve them in startup
+work on unit tests
+script database and also get its backup and push to DB folder
+
 
 UI:
 in angular create httpService

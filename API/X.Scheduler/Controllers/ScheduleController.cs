@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using X.Scheduler.Data;
@@ -7,6 +8,7 @@ using X.Scheduler.Models;
 
 namespace X.Scheduler.Controllers
 {
+    [EnableCors("SiteCorsPolicy")]
     [Route("api/[controller]")]
     public class ScheduleController : Controller
     {
@@ -20,7 +22,7 @@ namespace X.Scheduler.Controllers
         [HttpGet]
         public List<ScheduleViewModel> Get()
         {
-            IEnumerable<Schedule> scheduleWithStaff = AppContext.Schedule;
+            IEnumerable<Schedule> scheduleWithStaff = AppContext.Schedule.OrderBy(x => x.Date);
             List<ScheduleViewModel> result = new List<ScheduleViewModel>();
             foreach (var sws in scheduleWithStaff)
             {
@@ -30,7 +32,8 @@ namespace X.Scheduler.Controllers
                     staff.FirstName,
                     staff.LastName,
                     sws.Date.ToString("yyyy-MM-dd"),
-                    (short)sws.Shift);
+                    (short)sws.Shift,
+                    "Date,Shift,Staff");
 
                 result.Add(svm);
             }

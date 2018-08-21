@@ -1,0 +1,21 @@
+<div class="container">
+  <h2 align="center"> Support Schedule</h2>
+  <table class="table table-dark table-hover">
+    <tr>
+      <th *ngFor="let columnName of columnNames">
+        {{columnName}}
+      </th>
+    </tr>
+    <tr *ngFor="let schedule of schedules">
+      <td width="20%">
+        {{ schedule.date}}
+      </td>
+      <td width="20%">
+        {{ schedule.shift}}
+      </td>
+      <td width="60%">
+        {{ schedule.staff}}
+      </td>
+    </tr>
+  </table>
+</div>

@@ -1,20 +1,24 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { NgModule, ErrorHandler, APP_INITIALIZER } from '@angular/core';
 
-import { AppComponent } from './app.component';
+import { AppComponent } from './components/app/app.component';
 import { HttpClientModule } from '@angular/common/http';
-import { HttpService } from './common/http.service';
-
+import { AppErrorHandler } from './common/exceptionHandling/app-error-handler';
+import { ScheduleComponent } from './components/schedule/schedule.component';
+import { ScheduleService } from './common/services/schedule.service';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    ScheduleComponent
+     
   ],
   imports: [
     BrowserModule,
     HttpClientModule
   ],
-  providers: [HttpService],
+  providers: [ScheduleService,
+    { provide: ErrorHandler, useClass: AppErrorHandler }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

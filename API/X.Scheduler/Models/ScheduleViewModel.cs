@@ -6,12 +6,13 @@ namespace X.Scheduler.Models
     public class ScheduleViewModel
     {
 
-        public ScheduleViewModel(string staffFirstName, string staffLastName, string date, short shift)
+        public ScheduleViewModel(string staffFirstName, string staffLastName, string date, short shift, string columns)
         {
             this.staffFirstName = staffFirstName;
             this.staffLastName = staffLastName;
             Date = date;
             Shift = shift;
+            Columns = columns;
         }
 
         [JsonIgnore]
@@ -31,5 +32,7 @@ namespace X.Scheduler.Models
                 return string.Concat(staffFirstName, " ", staffLastName);
             }
         }
+
+        public string Columns { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +24,21 @@ namespace X.Scheduler
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            // ********************
+            // Setup CORS
+            // ********************
+            var corsBuilder = new CorsPolicyBuilder();
+            corsBuilder.AllowAnyHeader();
+            corsBuilder.AllowAnyMethod();
+            corsBuilder.AllowAnyOrigin(); // For anyone access.
+            corsBuilder.AllowCredentials();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("SiteCorsPolicy", corsBuilder.Build());
+            });
+
             services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultCS")));
             IServiceProvider provider = services.BuildServiceProvider();
             var appContext = provider.GetRequiredService<ApplicationContext>();
@@ -40,7 +56,13 @@ namespace X.Scheduler
                 app.UseDeveloperExceptionPage();
             }
             loggerFactory.AddLog4Net();
+
             app.UseMvc();
+
+            // ********************
+            // USE CORS - might not be required.
+            // ********************
+            app.UseCors("SiteCorsPolicy");
 
         }
     }
