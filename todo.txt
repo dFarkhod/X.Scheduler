@@ -1,4 +1,11 @@
 V extract staff list from database
+UI:
+V in angular create httpService
+V create scheduleService and inherit from it
+V create schedule component and call scheduleService
+V display data in table
+
+
 
 API:
 V add logger
@@ -20,10 +27,4 @@ CREATE NEW TABLES RULES in the database and retrieve them in startup
 work on unit tests
 script database and also get its backup and push to DB folder
 
-
-UI:
-in angular create httpService
-create scheduleService and inherit from it
-create schedule component and call scheduleService
-display data in li
 
