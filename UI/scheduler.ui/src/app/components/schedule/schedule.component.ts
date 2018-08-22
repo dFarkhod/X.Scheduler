@@ -16,7 +16,7 @@ export class ScheduleComponent implements OnInit {
   constructor(private scService: ScheduleService) { }
 
   ngOnInit() {
-    this.scService.getAll()
+    this.scService.getAll<Schedule>()
       .subscribe(
         schedules => {
           this.schedules = schedules;

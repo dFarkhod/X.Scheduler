@@ -4,27 +4,28 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
-import { AppError } from '../exceptionHandling/app-error';
 import { NotFoundError } from '../exceptionHandling/not-found-error';
 import { BadInput } from '../exceptionHandling/bad-input';
+import { AppError } from '../exceptionHandling/app-error';
 
 @Injectable()
 export class HttpService {
 
   constructor(private url: string, private http: HttpClient) { }
 
-  public getAll() {
-    return this.http.get(this.url).map(response => response)
+  public getAll<T>(): Observable<T[]> {
+    return this.http.get<Array<T>>(this.url)
     .catch(this.handleError);
   }
 
-  public create(rename) {
-    return this.http.post(this.url, rename)
-      .catch(this.handleError);
+  public create(item) {
+    return this.http.post(this.url, item)
+    .map(response=>JSON.stringify(response))
+    .catch(this.handleError);
   }
 
-  public update(item) {
-    return this.http.patch(this.url + '/' + item.id, JSON.stringify(item.title))
+  public update<T>(item) {
+    return this.http.patch<T>(this.url + '/' + item.id, JSON.stringify(item.title))
     .catch(this.handleError);
   }
 
