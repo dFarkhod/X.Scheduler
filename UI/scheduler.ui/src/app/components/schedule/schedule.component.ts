@@ -18,8 +18,8 @@ export class ScheduleComponent implements OnInit {
   ngOnInit() {
     this.scService.getAll()
       .subscribe(
-        response => {
-          this.schedules = response;
+        schedules => {
+          this.schedules = schedules;
           this.columnNames = this.schedules[0].columns.split(',');
         })
 

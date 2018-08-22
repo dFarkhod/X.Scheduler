@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
 import { AppError } from '../exceptionHandling/app-error';
 import { NotFoundError } from '../exceptionHandling/not-found-error';
@@ -13,7 +14,7 @@ export class HttpService {
   constructor(private url: string, private http: HttpClient) { }
 
   public getAll() {
-    return this.http.get(this.url)
+    return this.http.get(this.url).map(response => response)
     .catch(this.handleError);
   }
 
