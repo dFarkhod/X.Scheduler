@@ -7,4 +7,5 @@ Time spent on X.Scheduler project:
 18-Aug: 3 hours - coding web api, web ui, creating repo in git hub and pushing solution
 19-Aug: 6 hours - working on schedule generation
 20-Aug: 2 hours - refactoring data retrieval part and implementation of schedules housekeeping.
-21-Aug: 3 hours - coding web ui part is completed.
+21-Aug: 3 hours - coding web ui part.
+22-Aug: 1 hour - enhancing web ui part.
