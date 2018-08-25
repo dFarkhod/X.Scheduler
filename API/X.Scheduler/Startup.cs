@@ -44,15 +44,16 @@ namespace X.Scheduler
             services.AddSingleton(cm);
             cm.Initialize();
 
-            IServiceProvider provider = services.BuildServiceProvider();
-            var appContext = provider.GetRequiredService<ApplicationContext>();
-            ScheduleManager sm = new ScheduleManager(appContext);
-            services.AddSingleton(sm);
-            sm.Initialize();
-
             RulesManager rm = new RulesManager();
             services.AddSingleton(rm);
             rm.Initialize();
+
+            IServiceProvider provider = services.BuildServiceProvider();
+            var appContext = provider.GetRequiredService<ApplicationContext>();
+            ScheduleManager sm = new ScheduleManager(appContext, rm);
+            services.AddSingleton(sm);
+            sm.Initialize();
+
             #endregion
         }
 

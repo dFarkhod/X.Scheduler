@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\X.Scheduler.Data\X.Scheduler.Data.csproj" />
+    <ProjectReference Include="..\X.Scheduler.Rules\X.Scheduler.Rules.csproj" />
   </ItemGroup>
 
 </Project>

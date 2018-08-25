@@ -22,7 +22,7 @@ namespace X.Scheduler.Controllers
         [HttpGet]
         public List<ScheduleViewModel> Get()
         {
-            IEnumerable<Schedule> scheduleWithStaff = AppContext.Schedule.OrderBy(x => x.Date);
+            IEnumerable<Schedule> scheduleWithStaff = AppContext.Schedule;
             List<ScheduleViewModel> result = new List<ScheduleViewModel>();
             foreach (var sws in scheduleWithStaff)
             {
@@ -37,9 +37,12 @@ namespace X.Scheduler.Controllers
 
                 result.Add(svm);
             }
+
+            result = result.OrderBy(s => s.Date).ThenBy(s => s.Shift).ToList();
             return result;
         }
 
+        #region commented
         // GET api/values/5
         //[HttpGet("{id}")]
         //public string Get(int id)
@@ -64,5 +67,6 @@ namespace X.Scheduler.Controllers
         //public void Delete(int id)
         //{
         //}
+        #endregion
     }
 }

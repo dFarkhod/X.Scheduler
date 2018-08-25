@@ -4,9 +4,11 @@ namespace X.Scheduler.Rules
 {
     public interface IRule
     {
-        int ApplicationSequnce { get; set; }
+        string Description { get; }
 
-        List<int> ApplyRule(List<int> items);
+        int ApplicationSequnce { get; }
+
+        List<int> ApplyRule(List<int> inputItems, int uniqueItemsCount);
 
 
     }

@@ -13,15 +13,17 @@ namespace X.Scheduler.Managers
     {
         private Timer Timer;
         private ApplicationContext AppContext = null;
+        private RulesManager RulesManager = null;
         private DateTime FirstWorkingDayDate = DateTime.Today;
         private List<Schedule> ActiveSchedule = new List<Schedule>();
         private bool NeedToGenerateNewSchedule = true;
         private int SchedulePeriodInDays = 14;
         private string FirstWorkingWeekDay = "Monday";
 
-        public ScheduleManager(ApplicationContext appContext)
+        public ScheduleManager(ApplicationContext appContext, RulesManager rm)
         {
             AppContext = appContext;
+            RulesManager = rm;
         }
 
         public override void Initialize()
@@ -45,7 +47,7 @@ namespace X.Scheduler.Managers
             }
             catch (Exception ex)
             {
-                //TODO: Log exception by logger
+                //TODO: Implement logging
             }
             finally
             {
@@ -55,16 +57,9 @@ namespace X.Scheduler.Managers
 
         private void Handle()
         {
-            try
-            {
-                FirstWorkingDayDate = GetFirstWorkingDayOfWeek();
-                HousekeepSchedules();
-                GenerateNewSchedule();
-            }
-            catch (Exception ex)
-            {
-                //TODO: Log exception by logger
-            }
+            FirstWorkingDayDate = GetFirstWorkingDayOfWeek();
+            HousekeepSchedules();
+            GenerateNewSchedule();
         }
 
         private void HousekeepSchedules()
@@ -110,59 +105,69 @@ namespace X.Scheduler.Managers
             ValidateStaffsCount();
 
             List<Staff> staffs = AppContext.Staff.ToList();
-            List<int> results = GetRandomNumbersListWtihAppliedRule();
-            List<int> results2 = ApplyPostRule(results);
+            int StaffsCount = staffs.Count();
+            int scheduleItemsCount = SchedulePeriodInDays * 2;
+            List<int> uniqueNumberList = GetUniqueNumbersList(StaffsCount, scheduleItemsCount);
 
-            // TODO: need to move this part to test project
-            /*
-            Dictionary<int, int> dic = new Dictionary<int, int>();
-            foreach (var item in results2)
+            List<int> staffIndexListWithRules = RulesManager.ApplyRules(uniqueNumberList, StaffsCount - 1);
+            GenerateSchedule(staffs, staffIndexListWithRules);
+        }
+
+        private List<int> GetUniqueNumbersList(int StaffsCount, int scheduleItemsCount)
+        {
+            List<int> uniqueNumberList = new List<int>(scheduleItemsCount);
+            while (uniqueNumberList.Count < scheduleItemsCount)
             {
-                int count = results2.Where(x => x.Equals(item)).Count();
-
-                if (count == 1)
-                {
-                    throw new Exception("Shifts caount cannot be 1. It shoud be at least 2."); // rule 3 broken
-                }
-                if (!dic.ContainsKey(item))
-                    dic.Add(item, count);
+                IEnumerable<int> newItems = GetUniqueRandomNumbers(0, StaffsCount - 1);
+                uniqueNumberList.AddRange(newItems);
             }
-            foreach (var item in dic)
+
+            if (uniqueNumberList.Count > scheduleItemsCount)
             {
-                Console.WriteLine(item.Key + "," + item.Value);
+                int countToRemove = uniqueNumberList.Count - scheduleItemsCount;
+                uniqueNumberList.RemoveRange(scheduleItemsCount, countToRemove);
             }
-            */
 
+            return uniqueNumberList;
+        }
+
+        private void GenerateSchedule(List<Staff> staffs, List<int> scheduleListWithRules)
+        {
             int currentItemIndex = 0;
-            DateTime ShiftDate = FirstWorkingDayDate;
-            foreach (var item in results2)
+            try
             {
-                if (staffs[item] != null)
+                DateTime ShiftDate = FirstWorkingDayDate;
+                foreach (var item in scheduleListWithRules)
                 {
-                    Schedule sch = new Schedule();
-                    sch.StaffId = staffs[item].Id;
-
-                    if (currentItemIndex == 0 || currentItemIndex % 2 == 0)
+                    if (staffs[item] != null)
                     {
-                        sch.Shift = Shift.First;
+                        Schedule sch = new Schedule();
+                        sch.StaffId = staffs[item].Id; //item
+
+                        if (currentItemIndex == 0 || currentItemIndex % 2 == 0)
+                        {
+                            sch.Shift = Shift.First;
+                        }
+                        else
+                        {
+                            sch.Shift = Shift.Second;
+                        }
+
+                        sch.Date = ShiftDate;
+                        ActiveSchedule.Add(sch);
+                        if (currentItemIndex > 0 && currentItemIndex % 2 != 0)
+                            ShiftDate = ShiftDate.AddDays(1);
                     }
-                    else
-                    {
-                        sch.Shift = Shift.Second;
-                    }
-
-                    sch.Date = ShiftDate;
-                    ActiveSchedule.Add(sch);
-
-
-                    if (currentItemIndex > 0 && currentItemIndex % 2 != 0)
-                        ShiftDate = ShiftDate.AddDays(1);
+                    currentItemIndex++;
                 }
 
-                currentItemIndex++;
+                AppContext.Schedule.AddRange(ActiveSchedule);
+                AppContext.SaveChanges();
             }
-            AppContext.Schedule.AddRange(ActiveSchedule);
-            AppContext.SaveChanges();
+            catch (Exception ex)
+            {
+                //TODO: Implement logging
+            }
         }
 
         private bool ValidateStaffsCount()
@@ -196,119 +201,7 @@ namespace X.Scheduler.Managers
 
         }
 
-        private List<int> GetRandomNumbersListWtihAppliedRule()
-        {
-            var randomNumbers = new List<int>();
-            var randomizer = new Random();
-            int number = 0;
-            int itemsCount = SchedulePeriodInDays * 2;
-            int staffCount = AppContext.Staff.Count();
-
-            for (int i = 0; i < itemsCount; i++)
-            {
-                number = ApplyPreRules(staffCount, randomNumbers, number, i);
-                randomNumbers.Add(number);
-
-            }
-            return randomNumbers;
-        }
-
-        private int ApplyPreRules(int staffCount, List<int> randomNumbers, int number, int i)
-        {
-            if (randomNumbers.Count == 0)
-            {
-                return number;
-            }
-            else if (randomNumbers.Count >= 1)
-            {
-                while (i > 0 && randomNumbers[i - 1] == number)  // rule 1
-                {
-                    number = GetNextRandomNumber(staffCount);
-                }
-
-                while (i > 0 && i % 2 == 0 && randomNumbers[i - 2] == number) // rule 2
-                {
-                    number = GetNextRandomNumber(staffCount);
-                }
-
-                //foreach (var num in randomNumbers)
-                //{
-                int count = randomNumbers.Where(x => x.Equals(number)).Count();
-                while (count == 4)
-                {
-                    number = GetNextRandomNumber(staffCount);
-                    count = randomNumbers.Where(x => x.Equals(number)).Count();
-                }
-                //}
-
-                return number;
-            }
-
-            return number;
-        }
-
-        private List<int> ApplyPostRule(List<int> shifts)
-        {
-            List<int> shiftsWithPostRules = new List<int>();
-            List<int> empsWithOneShift = new List<int>();
-            List<int> empsWithThreeShifts = new List<int>();
-            int staffCount = AppContext.Staff.Count();
-            shiftsWithPostRules = new List<int>(shifts);
-
-            for (int staffNum = 0; staffNum < staffCount; staffNum++)
-            {
-                int count = shifts.Where(x => x.Equals(staffNum)).Count();
-                int staffIndex = shifts.IndexOf(staffNum);
-
-                if (count == 1)
-                {
-                    if (!empsWithOneShift.Contains(staffIndex))
-                        empsWithOneShift.Add(staffIndex);
-                }
-
-                if (count >= 3)
-                {
-                    if (!empsWithThreeShifts.Contains(staffIndex))
-                        empsWithThreeShifts.Add(staffIndex);
-                }
-            }
-
-            if (empsWithOneShift.Count > 0 && empsWithThreeShifts.Count > 0)
-            {
-                bool hit = false;
-                for (int i = 0; i < empsWithOneShift.Count; i++)
-                {
-                    foreach (var threeShiftedEmpIndex in empsWithThreeShifts)
-                    {
-                        int oneShiftedEmpNum = shiftsWithPostRules[empsWithOneShift[i]];
-                        int properEmpNumAfterPreRules = ApplyPreRules(staffCount, shiftsWithPostRules, oneShiftedEmpNum, threeShiftedEmpIndex);
-                        if (!oneShiftedEmpNum.Equals(properEmpNumAfterPreRules))
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            shiftsWithPostRules[threeShiftedEmpIndex] = oneShiftedEmpNum;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            return shiftsWithPostRules;
-        }
-
-
-        private int GetNextRandomNumber(int maxValue)
-        {
-            var randomizer = new Random();
-            return randomizer.Next(0, maxValue);
-        }
-
-        /// <summary>
-        /// Returns all numbers, between min and max inclusive, once in a random sequence.
-        /// </summary>
-        IEnumerable<int> UniqueRandom(int minInclusive, int maxInclusive)
+        private IEnumerable<int> GetUniqueRandomNumbers(int minInclusive, int maxInclusive)
         {
             List<int> candidates = new List<int>();
             for (int i = minInclusive; i <= maxInclusive; i++)
@@ -323,37 +216,6 @@ namespace X.Scheduler.Managers
                 candidates.RemoveAt(index);
             }
         }
-
-
-
-
-        public IEnumerable<int> GetSchedule(int shiftsCount, int staffsCount)
-        {
-            List<int> candidates = new List<int>();
-            for (int i = 1; i <= shiftsCount; i++)
-            {
-                candidates.Add(i);
-            }
-            Random rnd = new Random();
-            while (candidates.Count > 0)
-            {
-                int index = rnd.Next(staffsCount);
-                //while (randomNumbers[i - 1] == number)  // rule 1
-                //{
-                //    number = GetNextRandomNumber(staffsCount);
-                //}
-
-                //while (i % 2 == 0 && randomNumbers[i - 2] == number) // rule 2
-                //{
-                //    number = GetNextRandomNumber(staffsCount);
-                //}
-
-                yield return candidates[index];
-                candidates.RemoveAt(index);
-            }
-        }
-
-
 
 
     }
