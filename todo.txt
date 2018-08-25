@@ -15,15 +15,10 @@ V also add logic to do not generate new schedule if it already has
 V test logic of checking for housekeeping date
 V make each rule to be located in a separate dll
 V during startup load all the rule dlls
+V implement ruleManager loading rules from irule by using Plugin concept
+V implement 4 rules as a separate Rule class instances
+V implement rulleApplication mechanism
 
-implement ruleManager loading rules from irule by using Plugin concept
-implement 4 rules as a separate Rule class instances
-implement rulleApplication mechanism
-
-create different test cases for cheking 4 rules
- check RULES AS STATED IN:
-https://stackoverflow.com/questions/6488034/how-to-implement-a-rule-engine
-https://mobiusstraits.com/2015/08/12/expression-trees/
 
 work on unit tests
 script database and also get its backup and push to DB folder
