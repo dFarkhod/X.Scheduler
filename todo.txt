@@ -18,9 +18,14 @@ V during startup load all the rule dlls
 V implement ruleManager loading rules from irule by using Plugin concept
 V implement 4 rules as a separate Rule class instances
 V implement rulleApplication mechanism
-
+V script database and also get its backup and push to DB folder
 
 work on unit tests
-script database and also get its backup and push to DB folder
 
 
+
+if time allows look at 
+https://stackoverflow.com/questions/6488034/how-to-implement-a-rule-engine
+and
+https://mobiusstraits.com/2015/08/12/expression-trees/
+for dynamic rules
