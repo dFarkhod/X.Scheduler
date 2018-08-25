@@ -9,23 +9,27 @@ using X.Scheduler.Data.Entitites;
 
 namespace X.Scheduler.Managers
 {
-    public sealed class ScheduleManager
+    public class ScheduleManager : BaseManager
     {
         private Timer Timer;
         private ApplicationContext AppContext = null;
-        private DateTime FirstWorkingDay = DateTime.Today;
+        private DateTime FirstWorkingDayDate = DateTime.Today;
         private List<Schedule> ActiveSchedule = new List<Schedule>();
         private bool NeedToGenerateNewSchedule = true;
+        private int SchedulePeriodInDays = 14;
+        private string FirstWorkingWeekDay = "Monday";
 
         public ScheduleManager(ApplicationContext appContext)
         {
             AppContext = appContext;
         }
 
-        public void Initialize()
+        public override void Initialize()
         {
             TimeSpan handleInterval = new TimeSpan(1, 0, 0);
             TimeSpan.TryParse(ConfigurationManager.AppSetting["ScheduleGeneratorInterval"], out handleInterval);
+            int.TryParse(ConfigurationManager.AppSetting["SchedulePeriodInDays"], out SchedulePeriodInDays);
+            FirstWorkingWeekDay = ConfigurationManager.AppSetting["FirstWorkingWeekDay"];
             Timer = new Timer(handleInterval.TotalMilliseconds);
             Timer.Elapsed += new ElapsedEventHandler(HandleTimer_Elapsed);
             Timer.Start();
@@ -53,7 +57,7 @@ namespace X.Scheduler.Managers
         {
             try
             {
-                FirstWorkingDay = GetFirstWorkingDayOfWeek();
+                FirstWorkingDayDate = GetFirstWorkingDayOfWeek();
                 HousekeepSchedules();
                 GenerateNewSchedule();
             }
@@ -72,7 +76,7 @@ namespace X.Scheduler.Managers
             }
 
             var latestScheduleRecord = AppContext.Schedule.Max(s => s.Date);
-            if (latestScheduleRecord != null && latestScheduleRecord < FirstWorkingDay)
+            if (latestScheduleRecord != null && latestScheduleRecord < FirstWorkingDayDate)
             {
                 var scheduleHistoryItems = new List<ScheduleHistory>();
                 var existingSchedules = AppContext.Schedule;
@@ -130,7 +134,7 @@ namespace X.Scheduler.Managers
             */
 
             int currentItemIndex = 0;
-            DateTime ShiftDate = FirstWorkingDay;
+            DateTime ShiftDate = FirstWorkingDayDate;
             foreach (var item in results2)
             {
                 if (staffs[item] != null)
@@ -179,7 +183,7 @@ namespace X.Scheduler.Managers
             DateTime foundDate = DateTime.Today;
             for (int dayOfWeek = 1; dayOfWeek <= 7; dayOfWeek++)
             {
-                if (foundDate.DayOfWeek.ToString() == Constants.FIRST_WORKING_DAY)
+                if (foundDate.DayOfWeek.ToString().Equals(FirstWorkingWeekDay))
                 {
                     break;
                 }
@@ -197,7 +201,7 @@ namespace X.Scheduler.Managers
             var randomNumbers = new List<int>();
             var randomizer = new Random();
             int number = 0;
-            int itemsCount = Constants.SCHEDULE_DAYS * 2;
+            int itemsCount = SchedulePeriodInDays * 2;
             int staffCount = AppContext.Staff.Count();
 
             for (int i = 0; i < itemsCount; i++)

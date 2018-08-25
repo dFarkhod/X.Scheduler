@@ -13,17 +13,18 @@ V get rid of repository and use appContext
 V set housekeeping interval less and see if the manager gets running
 V also add logic to do not generate new schedule if it already has
 V test logic of checking for housekeeping date
+V make each rule to be located in a separate dll
+V during startup load all the rule dlls
 
-fix the issue with insertRange for scheduleHistory
-fix the issue with my rule engine
-use dictionary instead of list in my rules methods
-make each rule to be located in a separate dll
-during startup load all the rule dlls
+implement ruleManager loading rules from irule by using Plugin concept
+implement 4 rules as a separate Rule class instances
+implement rulleApplication mechanism
+
 create different test cases for cheking 4 rules
  check RULES AS STATED IN:
 https://stackoverflow.com/questions/6488034/how-to-implement-a-rule-engine
 https://mobiusstraits.com/2015/08/12/expression-trees/
-CREATE NEW TABLES RULES in the database and retrieve them in startup
+
 work on unit tests
 script database and also get its backup and push to DB folder
 

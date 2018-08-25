@@ -24,10 +24,9 @@ namespace X.Scheduler
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultCS")));
 
-            // ********************
-            // Setup CORS
-            // ********************
+            #region CORS
             var corsBuilder = new CorsPolicyBuilder();
             corsBuilder.AllowAnyHeader();
             corsBuilder.AllowAnyMethod();
@@ -38,14 +37,23 @@ namespace X.Scheduler
             {
                 options.AddPolicy("SiteCorsPolicy", corsBuilder.Build());
             });
+            #endregion
 
-            services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultCS")));
+            #region Initialization
+            ConfigurationManager cm = new ConfigurationManager();
+            services.AddSingleton(cm);
+            cm.Initialize();
+
             IServiceProvider provider = services.BuildServiceProvider();
             var appContext = provider.GetRequiredService<ApplicationContext>();
             ScheduleManager sm = new ScheduleManager(appContext);
             services.AddSingleton(sm);
             sm.Initialize();
 
+            RulesManager rm = new RulesManager();
+            services.AddSingleton(rm);
+            rm.Initialize();
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,10 +66,6 @@ namespace X.Scheduler
             loggerFactory.AddLog4Net();
 
             app.UseMvc();
-
-            // ********************
-            // USE CORS - might not be required.
-            // ********************
             app.UseCors("SiteCorsPolicy");
 
         }

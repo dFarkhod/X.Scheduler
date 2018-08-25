@@ -3,15 +3,19 @@ using System.IO;
 
 namespace X.Scheduler.Managers
 {
-    static class ConfigurationManager
+    public class ConfigurationManager : BaseManager
     {
-        public static IConfiguration AppSetting { get; }
+        public static IConfiguration AppSetting { get; private set; }
         static ConfigurationManager()
         {
+
+        }
+        public override void Initialize()
+        {
             AppSetting = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json")
-                    .Build();
+                   .SetBasePath(Directory.GetCurrentDirectory())
+                   .AddJsonFile("appsettings.json")
+                   .Build();
         }
     }
 }
