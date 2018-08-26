@@ -37,7 +37,7 @@ namespace X.Scheduler.Rules
                 {
                     int number = NextItem;
                     if (number.Equals(NEGATIVE))
-                        number = GetNextRandomNumber(OutputItems.Count);
+                        number = GetNextRandomNumber(uniqueItemsCount);
 
                     OutputItems[CurrentIndex] = number;
                 }

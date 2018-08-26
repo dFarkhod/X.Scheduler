@@ -64,8 +64,8 @@ namespace X.Scheduler
             {
                 app.UseDeveloperExceptionPage();
             }
-            loggerFactory.AddLog4Net();
 
+            loggerFactory.AddFile("Logs/X.Scheduler_{Date}.txt");
             app.UseMvc();
             app.UseCors("SiteCorsPolicy");
 

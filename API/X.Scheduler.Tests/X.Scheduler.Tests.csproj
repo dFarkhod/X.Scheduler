@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\X.Scheduler.Rules\X.Scheduler.Rules.csproj" />
     <ProjectReference Include="..\X.Scheduler\X.Scheduler.csproj" />
   </ItemGroup>
 

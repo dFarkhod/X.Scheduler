@@ -6,7 +6,6 @@ using System.Timers;
 using X.Scheduler.Data;
 using X.Scheduler.Data.Entitites;
 
-
 namespace X.Scheduler.Managers
 {
     public class ScheduleManager : BaseManager
@@ -45,9 +44,10 @@ namespace X.Scheduler.Managers
                 Timer.Stop();
                 Handle();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //TODO: Implement logging
+                throw;
             }
             finally
             {
@@ -164,9 +164,10 @@ namespace X.Scheduler.Managers
                 AppContext.Schedule.AddRange(ActiveSchedule);
                 AppContext.SaveChanges();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //TODO: Implement logging
+                throw;
             }
         }
 

@@ -1,48 +1,61 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using X.Scheduler.Managers;
 
 namespace X.Scheduler.Tests
 {
     [TestClass]
-    public class ScheduleFactoryTests
+    public class RulesTests
     {
+
         [TestMethod]
-        public void TestRandomNumbers()
+        public void AnyEmployeeWithOneShift()
         {
-            // ScheduleGenerator.Instance.GenerateSchedule(Constants.SCHEDULE_DAYS * 2, 10);
-            //ScheduleGenerator sf = new ScheduleGenerator();
-            //List<int> randomList = sf.GetRandomNumbersList(Constants.SCHEDULE_DAYS * 2, 10);
-            //Assert.IsNotNull(randomList);
+            RulesManager rm = new RulesManager();
+            rm.Initialize(@"C:\Projects\X.Scheduler\API\X.Scheduler\bin\Debug\netcoreapp2.1\");
+            List<int> inputList = new List<int>();
+            Random rnd = new Random();
+            for (int i = 0; i < 28; i++)
+            {
+                inputList.Add(rnd.Next(0, 9));
+            }
+            List<int> resultList = new List<int>();
+            resultList = rm.ApplyRules(inputList, 9);
+
+            foreach (var item in resultList)
+            {
+                int count = resultList.Where(x => x.Equals(item)).Count();
+
+                if (count.Equals(1))
+                    Assert.Fail();
+            }
         }
+
         [TestMethod]
-        public void TestScheduleGenerator()
+        public void AnyEmployeeWithTwoDaysSecondShift()
         {
-            //ScheduleGenerator.Instance.GenerateNewSchedule();
-
-            //ScheduleGenerator sf = new ScheduleGenerator();
-            //List<int> randomList = sf.GetRandomNumbersList(Constants.SCHEDULE_DAYS * 2, 10);
-            //Assert.IsNotNull(randomList);
-
-
-
-            // TODO: need to move this part to test project
-            /*
-            
-            foreach (var item in results2)
+            RulesManager rm = new RulesManager();
+            rm.Initialize(@"C:\Projects\X.Scheduler\API\X.Scheduler\bin\Debug\netcoreapp2.1\");
+            List<int> inputList = new List<int>();
+            Random rnd = new Random();
+            for (int i = 0; i < 28; i++)
             {
-                int count = results2.Where(x => x.Equals(item)).Count();
+                inputList.Add(rnd.Next(0, 9));
+            }
+            List<int> resultList = new List<int>();
+            resultList = rm.ApplyRules(inputList, 9);
 
-                if (count == 1)
+            int index = 0;
+            foreach (var item in resultList)
+            {
+                while (index > 0 && index % 2 == 0 && item.Equals(resultList[index - 2]))
                 {
-                    throw new Exception("Shifts caount cannot be 1. It shoud be at least 2."); // rule 3 broken
+                    Assert.Fail();
                 }
-                if (!dic.ContainsKey(item))
-                    dic.Add(item, count);
+                index++;
             }
-            foreach (var item in dic)
-            {
-                Console.WriteLine(item.Key + "," + item.Value);
-            }
-            */
         }
     }
 }

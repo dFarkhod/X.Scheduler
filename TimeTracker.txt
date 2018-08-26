@@ -10,3 +10,4 @@ Time spent on X.Scheduler project:
 21-Aug: 3 hours - coding web ui part.
 22-Aug: 1 hour - enhancing web ui part.
 25-Aug: 6 hours - enhanced rules implementation in web api 
+26-Aug: 4 hours - added logger, added couple of unit tests, fixed defects in some rules

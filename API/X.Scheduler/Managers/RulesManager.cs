@@ -18,8 +18,17 @@ namespace X.Scheduler.Managers
 
         public override void Initialize()
         {
-            string executingDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            string rulesLibrary = Path.Combine(executingDir, typeof(IRule).Namespace + ".dll");
+            LoadRules();
+        }
+
+        private void LoadRules(string pathToRulesLib = "")
+        {
+            if (string.IsNullOrEmpty(pathToRulesLib))
+            {
+                pathToRulesLib = Assembly.GetEntryAssembly().Location;
+                pathToRulesLib = Path.GetDirectoryName(pathToRulesLib);
+            }
+            string rulesLibrary = Path.Combine(pathToRulesLib, typeof(IRule).Namespace + ".dll");
             Assembly rulesAssembly = Assembly.LoadFrom(rulesLibrary);
             List<Type> ruleTypes = GetTypesByInterface<IRule>(rulesAssembly);
             ruleTypes.ForEach(rt =>
@@ -31,9 +40,12 @@ namespace X.Scheduler.Managers
                 }
             });
 
-            // TODO: LOG ("Available Rules:");
-            // Rules.ForEach(r => LOG.WriteLine(r.Description));
             Rules = Rules.OrderBy(o => o.ApplicationSequnce).ToList();
+        }
+
+        public void Initialize(string pathToRulesLib)
+        {
+            LoadRules(pathToRulesLib);
         }
 
         public List<int> ApplyRules(List<int> inputItems, int uniqueItemsCount)

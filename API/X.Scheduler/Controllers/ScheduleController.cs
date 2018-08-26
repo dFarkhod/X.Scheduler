@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 using X.Scheduler.Data;
@@ -13,9 +15,11 @@ namespace X.Scheduler.Controllers
     public class ScheduleController : Controller
     {
         private ApplicationContext AppContext = null;
-        public ScheduleController(ApplicationContext appContext)
+        private readonly ILogger<ScheduleController> Logger;
+        public ScheduleController(ApplicationContext appContext, ILogger<ScheduleController> logger)
         {
             AppContext = appContext;
+            Logger = logger;
         }
 
         // GET api/values
@@ -39,6 +43,8 @@ namespace X.Scheduler.Controllers
             }
 
             result = result.OrderBy(s => s.Date).ThenBy(s => s.Shift).ToList();
+
+            Logger.LogInformation("Schedule list sent:" + JsonConvert.SerializeObject(result));
             return result;
         }
 

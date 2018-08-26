@@ -16,7 +16,10 @@
     <Compile Remove="Managers\Log4NetExtensions.cs" />
     <Compile Remove="Managers\Log4NetLogger.cs" />
     <Compile Remove="Managers\Log4NetProvider.cs" />
+    <Compile Remove="Managers\RulesManager - Copy.cs" />
+    <Compile Remove="Program - Copy.cs" />
     <Compile Remove="StaffMap.cs" />
+    <Compile Remove="Startup - Copy.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,8 +28,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="2.2.4" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+	<PackageReference Include="Serilog.Extensions.Logging.File" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>

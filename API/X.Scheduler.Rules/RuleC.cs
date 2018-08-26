@@ -59,14 +59,12 @@ namespace X.Scheduler.Rules
                     foreach (var emp in empsWithThreeOrMoreShifts)
                     {
                         int oneShiftedEmpNum = OutputItems[empsWithOneShift[i]];
-                        // STILL NEED TO CHECK FOR RULES 1 TO 3 HERE BEFORE UPDATING
                         OutputItems[emp] = oneShiftedEmpNum;
                         break;
 
                     }
                 }
             }
-
 
             return OutputItems;
         }

@@ -19,8 +19,8 @@ V implement ruleManager loading rules from irule by using Plugin concept
 V implement 4 rules as a separate Rule class instances
 V implement rulleApplication mechanism
 V script database and also get its backup and push to DB folder
-
-work on unit tests
+V work on unit tests
+V add logger
 
 
 
