@@ -8,18 +8,18 @@ using X.Scheduler.Data.Entitites;
 
 namespace X.Scheduler.Managers
 {
-    public class ScheduleManager : BaseManager
+    public class ScheduleManager : BaseManager, IScheduleManager
     {
         private Timer Timer;
         private ApplicationContext AppContext = null;
-        private RulesManager RulesManager = null;
+        private IRulesManager RulesManager = null;
         private DateTime FirstWorkingDayDate = DateTime.Today;
         private List<Schedule> ActiveSchedule = new List<Schedule>();
         private bool NeedToGenerateNewSchedule = true;
         private int SchedulePeriodInDays = 14;
         private string FirstWorkingWeekDay = "Monday";
 
-        public ScheduleManager(ApplicationContext appContext, RulesManager rm)
+        public ScheduleManager(ApplicationContext appContext, IRulesManager rm)
         {
             AppContext = appContext;
             RulesManager = rm;

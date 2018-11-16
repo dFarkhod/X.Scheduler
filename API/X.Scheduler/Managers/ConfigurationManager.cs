@@ -3,7 +3,7 @@ using System.IO;
 
 namespace X.Scheduler.Managers
 {
-    public class ConfigurationManager : BaseManager
+    public class ConfigurationManager : BaseManager, IConfigurationManager
     {
         public static IConfiguration AppSetting { get; private set; }
         static ConfigurationManager()

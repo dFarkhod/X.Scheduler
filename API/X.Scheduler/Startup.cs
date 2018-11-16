@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
 using X.Scheduler.Data;
 using X.Scheduler.Managers;
 
@@ -39,22 +38,25 @@ namespace X.Scheduler
             });
             #endregion
 
+
+            //ConfigurationManager cm = new ConfigurationManager();
+            services.AddSingleton<IConfigurationManager, ConfigurationManager>();
+            services.AddSingleton<IRulesManager, RulesManager>();
+            services.AddSingleton<IScheduleManager, ScheduleManager>();
+
+            var serviceProvider = services.BuildServiceProvider();
+            var configManager = serviceProvider.GetService<IConfigurationManager>();
+            var rulesManager = serviceProvider.GetService<IRulesManager>();
+            var scheduleManager = serviceProvider.GetService<IScheduleManager>();
+
+
             #region Initialization
-            ConfigurationManager cm = new ConfigurationManager();
-            services.AddSingleton(cm);
-            cm.Initialize();
+            configManager.Initialize();
+            rulesManager.Initialize();
+            scheduleManager.Initialize();
+            #endregion         
 
-            RulesManager rm = new RulesManager();
-            services.AddSingleton(rm);
-            rm.Initialize();
 
-            IServiceProvider provider = services.BuildServiceProvider();
-            var appContext = provider.GetRequiredService<ApplicationContext>();
-            ScheduleManager sm = new ScheduleManager(appContext, rm);
-            services.AddSingleton(sm);
-            sm.Initialize();
-
-            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -64,6 +66,7 @@ namespace X.Scheduler
             {
                 app.UseDeveloperExceptionPage();
             }
+
 
             loggerFactory.AddFile("Logs/X.Scheduler_{Date}.txt");
             app.UseMvc();

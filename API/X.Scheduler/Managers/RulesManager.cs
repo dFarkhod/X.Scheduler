@@ -7,7 +7,7 @@ using X.Scheduler.Rules;
 
 namespace X.Scheduler.Managers
 {
-    public class RulesManager : BaseManager
+    public class RulesManager : BaseManager, IRulesManager
     {
         public RulesManager()
         {
