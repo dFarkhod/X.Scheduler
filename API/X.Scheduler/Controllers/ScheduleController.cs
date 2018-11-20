@@ -7,6 +7,7 @@ using System.Linq;
 using X.Scheduler.Data;
 using X.Scheduler.Data.Entitites;
 using X.Scheduler.Models;
+using X.Scheduler.Repository;
 
 namespace X.Scheduler.Controllers
 {
@@ -16,19 +17,28 @@ namespace X.Scheduler.Controllers
     {
         private ApplicationContext AppContext = null;
         private readonly ILogger<ScheduleController> Logger;
+        private readonly ScheduleRepository schedulRepository;
         public ScheduleController(ApplicationContext appContext, ILogger<ScheduleController> logger)
         {
             AppContext = appContext;
             Logger = logger;
+            schedulRepository = new ScheduleRepository(AppContext);
         }
 
         // GET api/values
         [HttpGet]
         public List<ScheduleViewModel> Get()
         {
-            IEnumerable<Schedule> scheduleWithStaff = AppContext.Schedule;
-            List<ScheduleViewModel> result = new List<ScheduleViewModel>();
-            foreach (var sws in scheduleWithStaff)
+            IEnumerable<Schedule> schedule = schedulRepository.GetSchedule();
+            List<ScheduleViewModel> scheduleWithStaff = MapStaffToSchedule(schedule);
+            Logger.LogInformation("Schedule list sent:" + JsonConvert.SerializeObject(scheduleWithStaff));
+            return scheduleWithStaff;
+        }
+
+        private List<ScheduleViewModel> MapStaffToSchedule(IEnumerable<Schedule> schedule)
+        {
+            List<ScheduleViewModel> scheduleWithStaff = new List<ScheduleViewModel>();
+            foreach (var sws in schedule)
             {
                 var staff = AppContext.Staff.FirstOrDefault(s => s.Id == sws.StaffId);
                 var svm = new
@@ -39,14 +49,13 @@ namespace X.Scheduler.Controllers
                     (short)sws.Shift,
                     "Date,Shift,Staff");
 
-                result.Add(svm);
+                scheduleWithStaff.Add(svm);
             }
-
-            result = result.OrderBy(s => s.Date).ThenBy(s => s.Shift).ToList();
-
-            Logger.LogInformation("Schedule list sent:" + JsonConvert.SerializeObject(result));
-            return result;
+            scheduleWithStaff = scheduleWithStaff.OrderBy(s => s.Date).ThenBy(s => s.Shift).ToList();
+            return scheduleWithStaff;
         }
+
+
 
         #region commented
         // GET api/values/5
