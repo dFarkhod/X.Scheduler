@@ -17,6 +17,10 @@ namespace X.Scheduler.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //modelBuilder.Entity<Staff>()
+            //    .Property(s => s.FirstName)
+            //    .HasMaxLength(100);
+
             base.OnModelCreating(modelBuilder);
             new StaffMap(modelBuilder.Entity<Staff>());
             new ScheduleMap(modelBuilder.Entity<Schedule>().HasOne(x => x.Staff).WithMany(s => s.Schedules).HasForeignKey(f => f.StaffId));

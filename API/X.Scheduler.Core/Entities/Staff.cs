@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace X.Scheduler.Core.Entitites
 {
@@ -20,13 +19,10 @@ namespace X.Scheduler.Core.Entitites
 
         }
 
-        [StringLength(100)]
         public string FirstName { get; set; }
 
-        [StringLength(100)]
         public string LastName { get; set; }
 
-        [StringLength(100)]
         public string Title { get; set; }
 
         [JsonIgnore]
