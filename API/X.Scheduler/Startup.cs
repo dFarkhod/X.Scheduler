@@ -5,8 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using X.Scheduler.Data;
+using X.Scheduler.Core.Abstracts;
+using X.Scheduler.Core.Repositories;
+using X.Scheduler.Persistence;
 using X.Scheduler.Managers;
+using X.Scheduler.Persistence.Repositories;
 
 namespace X.Scheduler
 {
@@ -42,13 +45,13 @@ namespace X.Scheduler
             //ConfigurationManager cm = new ConfigurationManager();
             services.AddSingleton<IConfigurationManager, ConfigurationManager>();
             services.AddSingleton<IRulesManager, RulesManager>();
+            services.AddScoped<IScheduleRepository, ScheduleRepository>();
             services.AddSingleton<IScheduleManager, ScheduleManager>();
 
             var serviceProvider = services.BuildServiceProvider();
             var configManager = serviceProvider.GetService<IConfigurationManager>();
             var rulesManager = serviceProvider.GetService<IRulesManager>();
             var scheduleManager = serviceProvider.GetService<IScheduleManager>();
-
 
             #region Initialization
             configManager.Initialize();

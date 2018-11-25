@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using X.Scheduler.Data.Entitites;
+using X.Scheduler.Core.Entitites;
+using X.Scheduler.Persistence.Maps;
 
-namespace X.Scheduler.Data
+namespace X.Scheduler.Persistence
 {
     public class ApplicationContext : DbContext
     {

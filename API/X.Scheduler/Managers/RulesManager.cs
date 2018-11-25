@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using X.Scheduler.Core.Abstracts;
 using X.Scheduler.Rules;
 
 namespace X.Scheduler.Managers

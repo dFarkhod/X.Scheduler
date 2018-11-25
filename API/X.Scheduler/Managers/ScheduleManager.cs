@@ -3,8 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
-using X.Scheduler.Data;
-using X.Scheduler.Data.Entitites;
+using X.Scheduler.Persistence;
+using X.Scheduler.Core.Entitites;
+using X.Scheduler.Core.Abstracts;
 
 namespace X.Scheduler.Managers
 {

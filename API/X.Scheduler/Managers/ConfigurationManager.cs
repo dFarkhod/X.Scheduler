@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.IO;
+using X.Scheduler.Core.Abstracts;
 
 namespace X.Scheduler.Managers
 {

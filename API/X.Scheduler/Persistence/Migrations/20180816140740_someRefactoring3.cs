@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace X.Scheduler.Data.Migrations
+namespace X.Scheduler.Persistence.Migrations
 {
     public partial class someRefactoring3 : Migration
     {

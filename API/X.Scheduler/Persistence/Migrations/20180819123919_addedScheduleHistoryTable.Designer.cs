@@ -4,10 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using X.Scheduler.Data;
 
-namespace X.Scheduler.Data.Migrations
+namespace X.Scheduler.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
     [Migration("20180819123919_addedScheduleHistoryTable")]
@@ -21,7 +19,7 @@ namespace X.Scheduler.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("X.Scheduler.Data.Entitites.Schedule", b =>
+            modelBuilder.Entity("X.Scheduler.Core.Entitites.Schedule", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -40,7 +38,7 @@ namespace X.Scheduler.Data.Migrations
                     b.ToTable("Schedule");
                 });
 
-            modelBuilder.Entity("X.Scheduler.Data.Entitites.ScheduleHistory", b =>
+            modelBuilder.Entity("X.Scheduler.Core.Entitites.ScheduleHistory", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -59,7 +57,7 @@ namespace X.Scheduler.Data.Migrations
                     b.ToTable("ScheduleHistory");
                 });
 
-            modelBuilder.Entity("X.Scheduler.Data.Entitites.Staff", b =>
+            modelBuilder.Entity("X.Scheduler.Core.Entitites.Staff", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -81,9 +79,9 @@ namespace X.Scheduler.Data.Migrations
                     b.ToTable("Staff");
                 });
 
-            modelBuilder.Entity("X.Scheduler.Data.Entitites.Schedule", b =>
+            modelBuilder.Entity("X.Scheduler.Core.Entitites.Schedule", b =>
                 {
-                    b.HasOne("X.Scheduler.Data.Entitites.Staff", "Staff")
+                    b.HasOne("X.Scheduler.Core.Entitites.Staff", "Staff")
                         .WithMany("Schedules")
                         .HasForeignKey("StaffId")
                         .OnDelete(DeleteBehavior.Cascade);

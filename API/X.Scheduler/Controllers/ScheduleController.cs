@@ -4,10 +4,10 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
-using X.Scheduler.Data;
-using X.Scheduler.Data.Entitites;
+using X.Scheduler.Persistence;
+using X.Scheduler.Core.Entitites;
 using X.Scheduler.Models;
-using X.Scheduler.Repository;
+using X.Scheduler.Core.Repositories;
 
 namespace X.Scheduler.Controllers
 {
@@ -17,19 +17,19 @@ namespace X.Scheduler.Controllers
     {
         private ApplicationContext AppContext = null;
         private readonly ILogger<ScheduleController> Logger;
-        private readonly ScheduleRepository schedulRepository;
-        public ScheduleController(ApplicationContext appContext, ILogger<ScheduleController> logger)
+        private readonly IScheduleRepository SchedulRepository;
+        public ScheduleController(ApplicationContext appContext, ILogger<ScheduleController> logger, IScheduleRepository scheduleRepository)
         {
             AppContext = appContext;
             Logger = logger;
-            schedulRepository = new ScheduleRepository(AppContext);
+            SchedulRepository = scheduleRepository;
         }
 
         // GET api/values
         [HttpGet]
         public List<ScheduleViewModel> Get()
         {
-            IEnumerable<Schedule> schedule = schedulRepository.GetSchedule();
+            IEnumerable<Schedule> schedule = SchedulRepository.GetSchedule();
             List<ScheduleViewModel> scheduleWithStaff = MapStaffToSchedule(schedule);
             Logger.LogInformation("Schedule list sent:" + JsonConvert.SerializeObject(scheduleWithStaff));
             return scheduleWithStaff;

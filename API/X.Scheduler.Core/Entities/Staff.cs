@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace X.Scheduler.Data.Entitites
+namespace X.Scheduler.Core.Entitites
 {
     public class Staff : BaseEntity
     {

@@ -1,4 +1,4 @@
-﻿namespace X.Scheduler.Data.Entitites
+﻿namespace X.Scheduler.Core.Entitites
 {
     public class BaseEntity
     {

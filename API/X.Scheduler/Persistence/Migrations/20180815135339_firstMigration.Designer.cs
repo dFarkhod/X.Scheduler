@@ -4,10 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using X.Scheduler;
 
-namespace X.Scheduler.Data.Migrations
+namespace X.Scheduler.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
     [Migration("20180815135339_firstMigration")]
@@ -21,7 +19,7 @@ namespace X.Scheduler.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("X.Scheduler.Data.Entitites.Schedule", b =>
+            modelBuilder.Entity("X.Scheduler.Core.Entitites.Schedule", b =>
                 {
                     b.Property<string>("Guid")
                         .ValueGeneratedOnAdd();
@@ -38,7 +36,7 @@ namespace X.Scheduler.Data.Migrations
                     b.ToTable("Schedule");
                 });
 
-            modelBuilder.Entity("X.Scheduler.Data.Entitites.Staff", b =>
+            modelBuilder.Entity("X.Scheduler.Core.Entitites.Staff", b =>
                 {
                     b.Property<string>("Guid")
                         .ValueGeneratedOnAdd();

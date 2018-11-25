@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using X.Scheduler.Data.Entitites;
+using X.Scheduler.Core.Entitites;
 
-namespace X.Scheduler.Data
+namespace X.Scheduler.Persistence.Maps
 {
     public class ScheduleMap
     {

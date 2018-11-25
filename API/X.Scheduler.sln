@@ -5,11 +5,11 @@ VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X.Scheduler", "X.Scheduler\X.Scheduler.csproj", "{B6D0A75B-F0F4-4B47-9435-996C747B87EC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X.Scheduler.Data", "X.Scheduler.Data\X.Scheduler.Data.csproj", "{EE568EA0-14EC-4ED1-80BA-DFD8764AC938}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X.Scheduler.Tests", "X.Scheduler.Tests\X.Scheduler.Tests.csproj", "{F6875B05-E992-4B1E-87A4-44E789FD55B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X.Scheduler.Rules", "X.Scheduler.Rules\X.Scheduler.Rules.csproj", "{84B419BF-24AF-40DD-9CE3-C9105416A107}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X.Scheduler.Rules", "X.Scheduler.Rules\X.Scheduler.Rules.csproj", "{84B419BF-24AF-40DD-9CE3-C9105416A107}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X.Scheduler.Core", "X.Scheduler.Core\X.Scheduler.Core.csproj", "{19B73C44-57D8-4E46-9AD6-5682168BCE92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +21,6 @@ Global
 		{B6D0A75B-F0F4-4B47-9435-996C747B87EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6D0A75B-F0F4-4B47-9435-996C747B87EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6D0A75B-F0F4-4B47-9435-996C747B87EC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EE568EA0-14EC-4ED1-80BA-DFD8764AC938}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EE568EA0-14EC-4ED1-80BA-DFD8764AC938}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EE568EA0-14EC-4ED1-80BA-DFD8764AC938}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EE568EA0-14EC-4ED1-80BA-DFD8764AC938}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F6875B05-E992-4B1E-87A4-44E789FD55B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F6875B05-E992-4B1E-87A4-44E789FD55B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6875B05-E992-4B1E-87A4-44E789FD55B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -33,6 +29,10 @@ Global
 		{84B419BF-24AF-40DD-9CE3-C9105416A107}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84B419BF-24AF-40DD-9CE3-C9105416A107}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84B419BF-24AF-40DD-9CE3-C9105416A107}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19B73C44-57D8-4E46-9AD6-5682168BCE92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19B73C44-57D8-4E46-9AD6-5682168BCE92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19B73C44-57D8-4E46-9AD6-5682168BCE92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19B73C44-57D8-4E46-9AD6-5682168BCE92}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

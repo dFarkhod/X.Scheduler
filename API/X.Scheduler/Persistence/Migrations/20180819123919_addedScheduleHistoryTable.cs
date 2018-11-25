@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace X.Scheduler.Data.Migrations
+namespace X.Scheduler.Persistence.Migrations
 {
     public partial class addedScheduleHistoryTable : Migration
     {
