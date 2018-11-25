@@ -2,7 +2,7 @@
 {
     public interface IScheduleManager
     {
-        void GenerateNewSchedule();
         void Initialize();
+        void GenerateNewSchedule();
     }
 }
