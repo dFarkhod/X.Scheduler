@@ -5,7 +5,7 @@ namespace X.Scheduler.Persistence.Maps
 {
     public class ScheduleHistoryMap
     {
-        private ReferenceCollectionBuilder<Staff, ScheduleHistory> referenceCollectionBuilder;
+        //private ReferenceCollectionBuilder<Staff, ScheduleHistory> referenceCollectionBuilder;
 
         public ScheduleHistoryMap(EntityTypeBuilder<ScheduleHistory> entityBuilder)
         {

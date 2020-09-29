@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,24 +12,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="AppSettingManager.cs" />
-    <Compile Remove="Managers\Log4NetExtensions.cs" />
-    <Compile Remove="Managers\Log4NetLogger.cs" />
-    <Compile Remove="Managers\Log4NetProvider.cs" />
-    <Compile Remove="Managers\RulesManager - Copy.cs" />
-    <Compile Remove="Program - Copy.cs" />
-    <Compile Remove="StaffMap.cs" />
-    <Compile Remove="Startup - Copy.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-	<PackageReference Include="Serilog.Extensions.Logging.File" Version="1.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Quartz.AspNetCore" Version="3.1.0" />
+    <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.1.0" />
+    <PackageReference Include="Quartz.Plugins.TimeZoneConverter" Version="3.1.0" />
+    <PackageReference Include="Quartz.Serialization.Json" Version="3.1.0" />
+	<PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>

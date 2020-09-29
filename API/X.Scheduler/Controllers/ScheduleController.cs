@@ -15,21 +15,21 @@ namespace X.Scheduler.Controllers
     [Route("api/[controller]")]
     public class ScheduleController : Controller
     {
-        private ApplicationContext AppContext = null;
+        //private ApplicationContext AppContext = null;
         private readonly ILogger<ScheduleController> Logger;
-        private readonly IScheduleRepository SchedulRepository;
-        public ScheduleController(ApplicationContext appContext, ILogger<ScheduleController> logger, IScheduleRepository scheduleRepository)
+        private readonly IAppRepository AppRepository;
+        public ScheduleController(ApplicationContext appContext, ILogger<ScheduleController> logger, IAppRepository appRepository)
         {
-            AppContext = appContext;
+            //AppContext = appContext;
             Logger = logger;
-            SchedulRepository = scheduleRepository;
+            AppRepository = appRepository;
         }
 
         // GET api/values
         [HttpGet]
         public List<ScheduleViewModel> Get()
         {
-            IEnumerable<Schedule> schedule = SchedulRepository.GetSchedule();
+            IEnumerable<Schedule> schedule = AppRepository.GetAllSchedules(); // TODO: Instead of using Repository here, use MediatR service
             List<ScheduleViewModel> scheduleWithStaff = MapStaffToSchedule(schedule);
             Logger.LogInformation("Schedule list sent:" + JsonConvert.SerializeObject(scheduleWithStaff));
             return scheduleWithStaff;
@@ -40,7 +40,7 @@ namespace X.Scheduler.Controllers
             List<ScheduleViewModel> scheduleWithStaff = new List<ScheduleViewModel>();
             foreach (var sws in schedule)
             {
-                var staff = AppContext.Staff.FirstOrDefault(s => s.Id == sws.StaffId);
+                var staff = AppRepository.GetStaffById(sws.StaffId);
                 var svm = new
                     ScheduleViewModel(
                     staff.FirstName,

@@ -6,76 +6,63 @@ using System.Timers;
 using X.Scheduler.Persistence;
 using X.Scheduler.Core.Entitites;
 using X.Scheduler.Core.Abstracts;
+using Microsoft.Extensions.Configuration;
+using X.Scheduler.Persistence.Repositories;
+using X.Scheduler.Core.Repositories;
+using Quartz;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace X.Scheduler.Managers
 {
-    public class ScheduleManager : BaseManager, IScheduleManager
+    [DisallowConcurrentExecution]
+    public class ScheduleGeneratorJob : BaseManager, IScheduleManager, IJob
     {
-        private Timer Timer;
-        private ApplicationContext AppContext = null;
         private IRulesManager RulesManager = null;
         private DateTime FirstWorkingDayDate = DateTime.Today;
         private List<Schedule> ActiveSchedule = new List<Schedule>();
         private bool NeedToGenerateNewSchedule = true;
         private int SchedulePeriodInDays = 14;
         private string FirstWorkingWeekDay = "Monday";
+        private IConfiguration Configuration;
+        private IAppRepository ScheduleRepo;
+        private ILogger<ScheduleGeneratorJob> Logger;
 
-        public ScheduleManager(ApplicationContext appContext, IRulesManager rm)
+        public ScheduleGeneratorJob(IRulesManager rm, IAppRepository repo, IConfiguration configuration, ILogger<ScheduleGeneratorJob> logger)
         {
-            AppContext = appContext;
+            ScheduleRepo = repo;
             RulesManager = rm;
+            Configuration = configuration;
+            Logger = logger;
+            Initialize();
         }
 
         public override void Initialize()
         {
-            TimeSpan handleInterval = new TimeSpan(1, 0, 0);
-            TimeSpan.TryParse(ConfigurationManager.AppSetting["ScheduleGeneratorInterval"], out handleInterval);
-            int.TryParse(ConfigurationManager.AppSetting["SchedulePeriodInDays"], out SchedulePeriodInDays);
-            FirstWorkingWeekDay = ConfigurationManager.AppSetting["FirstWorkingWeekDay"];
-            Timer = new Timer(handleInterval.TotalMilliseconds);
-            Timer.Elapsed += new ElapsedEventHandler(HandleTimer_Elapsed);
-            Timer.Start();
-            HandleTimer_Elapsed(this, null);
+            FirstWorkingWeekDay = Configuration["FirstWorkingWeekDay"];
         }
 
-        private void HandleTimer_Elapsed(object sender, ElapsedEventArgs e)
+        // TODO: Convert this method to async
+        private void HandleJob()
         {
-            try
-            {
-                Timer.Stop();
-                Handle();
-            }
-            catch (Exception)
-            {
-                //TODO: Implement logging
-                throw;
-            }
-            finally
-            {
-                Timer.Start();
-            }
-        }
-
-        private void Handle()
-        {
-            FirstWorkingDayDate = GetFirstWorkingDayOfWeek();
+            GetFirstWorkingDayOfWeek();
             HousekeepSchedules();
             GenerateNewSchedule();
         }
 
         private void HousekeepSchedules()
         {
-            if (AppContext.Schedule.Count() == 0)
+            if (ScheduleRepo.GetScheduleCount() == 0)
             {
                 NeedToGenerateNewSchedule = true;
                 return;
             }
 
-            var latestScheduleRecord = AppContext.Schedule.Max(s => s.Date);
+            var latestScheduleRecord = ScheduleRepo.GetLatestScheduleRecord();
             if (latestScheduleRecord != null && latestScheduleRecord < FirstWorkingDayDate)
             {
                 var scheduleHistoryItems = new List<ScheduleHistory>();
-                var existingSchedules = AppContext.Schedule;
+                var existingSchedules = ScheduleRepo.GetAllSchedules();
                 foreach (var existingSchedule in existingSchedules)
                 {
                     ScheduleHistory shItem = new ScheduleHistory();
@@ -85,11 +72,8 @@ namespace X.Scheduler.Managers
                     shItem.Date = existingSchedule.Date;
                     scheduleHistoryItems.Add(shItem);
                 }
-                AppContext.ScheduleHistory.AddRange(scheduleHistoryItems);
-
-                var truncateScheduleTable = "TRUNCATE TABLE [Schedule];";
-                AppContext.Database.ExecuteSqlCommand(truncateScheduleTable);
-                AppContext.SaveChanges();
+                ScheduleRepo.AddToHistory(scheduleHistoryItems);
+                ScheduleRepo.DeleteAllSchedules();
                 NeedToGenerateNewSchedule = true;
             }
             else
@@ -105,7 +89,7 @@ namespace X.Scheduler.Managers
 
             ValidateStaffsCount();
 
-            List<Staff> staffs = AppContext.Staff.ToList();
+            List<Staff> staffs = ScheduleRepo.GetAllStaff();
             int StaffsCount = staffs.Count();
             int scheduleItemsCount = SchedulePeriodInDays * 2;
             List<int> uniqueNumberList = GetUniqueNumbersList(StaffsCount, scheduleItemsCount);
@@ -162,30 +146,29 @@ namespace X.Scheduler.Managers
                     currentItemIndex++;
                 }
 
-                AppContext.Schedule.AddRange(ActiveSchedule);
-                AppContext.SaveChanges();
+                ScheduleRepo.AddRange(ActiveSchedule);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //TODO: Implement logging
+                Logger.LogError(ex, "Exception occured while Generating Schedule");
                 throw;
             }
         }
 
         private bool ValidateStaffsCount()
         {
-            if (!AppContext.Staff.Any())
+            if (ScheduleRepo.GetStaffCount() <= 0)
             {
                 throw new Exception("No any staff defined! Please define staff.");
             }
 
-            if (AppContext.Staff.Count() < 2)
+            if (ScheduleRepo.GetStaffCount() < 2)
                 throw new Exception("Please define at least two staffs");
 
             return true;
         }
 
-        private DateTime GetFirstWorkingDayOfWeek()
+        private void GetFirstWorkingDayOfWeek()
         {
             DateTime foundDate = DateTime.Today;
             for (int dayOfWeek = 1; dayOfWeek <= 7; dayOfWeek++)
@@ -199,8 +182,7 @@ namespace X.Scheduler.Managers
                     foundDate = DateTime.Today.AddDays(dayOfWeek);
                 }
             }
-            return foundDate;
-
+            FirstWorkingDayDate = foundDate;
         }
 
         private IEnumerable<int> GetUniqueRandomNumbers(int minInclusive, int maxInclusive)
@@ -219,6 +201,10 @@ namespace X.Scheduler.Managers
             }
         }
 
-
+        public Task Execute(IJobExecutionContext context)
+        {
+            HandleJob();
+            return Task.CompletedTask;
+        }
     }
 }
