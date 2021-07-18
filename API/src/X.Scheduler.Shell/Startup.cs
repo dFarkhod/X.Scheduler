@@ -134,7 +134,7 @@ namespace X.Scheduler.Shell
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseStaticFiles();
+            // todo: implement caching
             app.UseRouting();
             app.UseCors("CorsPolicy");
 

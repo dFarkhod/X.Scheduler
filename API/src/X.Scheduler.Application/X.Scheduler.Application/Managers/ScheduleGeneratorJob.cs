@@ -8,6 +8,7 @@ using X.Scheduler.Domain.Entities.Interfaces;
 using X.Scheduler.Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using X.Scheduler.Domain;
 
 namespace X.Scheduler.Application.Managers
 {
@@ -167,7 +168,7 @@ namespace X.Scheduler.Application.Managers
         private void GetFirstWorkingDayOfWeek()
         {
             DateTime foundDate = DateTime.Today;
-            for (int dayOfWeek = 1; dayOfWeek <= 7; dayOfWeek++)
+            for (int dayOfWeek = 1; dayOfWeek <= Constants.DAYS_IN_WEEK; dayOfWeek++)
             {
                 if (foundDate.DayOfWeek.ToString().Equals(FirstWorkingWeekDay))
                 {

@@ -26,11 +26,11 @@ namespace X.Scheduler.Application.Managers
         {
             Assembly rulesAssembly = Assembly.GetExecutingAssembly();
             List<Type> ruleTypes = GetTypesByInterface<IRule>(rulesAssembly);
-            ruleTypes.ForEach(rt =>
+            ruleTypes.ForEach(ruleType =>
             {
-                if (!rt.Attributes.ToString().Contains("Abstract"))
+                if (!ruleType.Attributes.ToString().Contains("Abstract"))
                 {
-                    IRule rule = Activator.CreateInstance(rt) as IRule;
+                    IRule rule = Activator.CreateInstance(ruleType) as IRule;
                     Rules.Add(rule);
                 }
             });
