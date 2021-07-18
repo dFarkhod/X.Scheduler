@@ -24,13 +24,7 @@ namespace X.Scheduler.Application.Managers
 
         private void LoadRules(string pathToRulesLib = "")
         {
-            if (string.IsNullOrEmpty(pathToRulesLib))
-            {
-                pathToRulesLib = Assembly.GetEntryAssembly().Location;
-                pathToRulesLib = Path.GetDirectoryName(pathToRulesLib);
-            }
-            string rulesLibrary = Path.Combine(pathToRulesLib, typeof(IRule).Namespace + ".dll");
-            Assembly rulesAssembly = Assembly.LoadFrom(rulesLibrary);
+            Assembly rulesAssembly = Assembly.GetExecutingAssembly();
             List<Type> ruleTypes = GetTypesByInterface<IRule>(rulesAssembly);
             ruleTypes.ForEach(rt =>
             {

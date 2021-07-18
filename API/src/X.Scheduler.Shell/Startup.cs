@@ -93,7 +93,7 @@ namespace X.Scheduler.Shell
                 );
 
                 // convert time zones using converter that can handle Windows/Linux differences
-                q.UseTimeZoneConverter();
+                //q.UseTimeZoneConverter();
                 q.UseInMemoryStore();
 
                 /*q.UsePersistentStore(s =>
