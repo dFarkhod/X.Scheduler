@@ -21,7 +21,7 @@ namespace X.Scheduler.Application.Managers
         {
             LoadRules();
         }
-
+        // todo: replace rules with the runtime code execution
         private void LoadRules(string pathToRulesLib = "")
         {
             Assembly rulesAssembly = Assembly.GetExecutingAssembly();

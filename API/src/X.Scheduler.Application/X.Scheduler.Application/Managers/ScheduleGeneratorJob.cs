@@ -38,7 +38,7 @@ namespace X.Scheduler.Application.Managers
             FirstWorkingWeekDay = Configuration["FirstWorkingWeekDay"];
         }
 
-        // TODO: Convert this method to async
+        // todo: Convert this method to async
         private void HandleJob()
         {
             GetFirstWorkingDayOfWeek();

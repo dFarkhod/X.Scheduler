@@ -11,6 +11,8 @@ using X.Scheduler.Infrastructure.Persistence;
 using X.Scheduler.Domain.Entities.Interfaces;
 using X.Scheduler.Infrastructure.Persistence.Repositories;
 using X.Scheduler.Application.Managers;
+using X.Scheduler.Infrastructure;
+using X.Scheduler.Application;
 
 namespace X.Scheduler.Shell
 {
@@ -28,10 +30,11 @@ namespace X.Scheduler.Shell
         {
             services.AddMediatR(typeof(Startup));
             services.AddMvc();
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnString")));
+            services.AddApplication(Configuration);
+            services.AddInfrastructure(Configuration);
 
             #region CORS
-           
+
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
@@ -41,10 +44,9 @@ namespace X.Scheduler.Shell
             });
             #endregion
 
-
             services.AddSingleton<IRulesManager, RulesManager>();
-            services.AddScoped<IAppRepository, AppRepository>();
 
+            //todo: replace quartz with Hangfire!
             services.AddQuartz(q =>
             {
                 // base quartz scheduler, job and trigger configuration
@@ -56,14 +58,14 @@ namespace X.Scheduler.Shell
 
                 // we could leave DI configuration intact and then jobs need to have public no-arg constructor
                 // the MS DI is expected to produce transient job instances 
-              /*  q.UseMicrosoftDependencyInjectionJobFactory(options =>
-                {
-                    // if we don't have the job in DI, allow fallback to configure via default constructor
-                    options.AllowDefaultConstructor = true;
-                });*/
+                /*  q.UseMicrosoftDependencyInjectionJobFactory(options =>
+                  {
+                      // if we don't have the job in DI, allow fallback to configure via default constructor
+                      options.AllowDefaultConstructor = true;
+                  });*/
 
                 // or 
-                 q.UseMicrosoftDependencyInjectionScopedJobFactory();
+                q.UseMicrosoftDependencyInjectionScopedJobFactory();
 
                 // these are the defaults
                 q.UseSimpleTypeLoader();
@@ -116,16 +118,12 @@ namespace X.Scheduler.Shell
 
             });
 
-                // ASP.NET Core hosting
-                services.AddQuartzServer(options =>
-            {
+            // ASP.NET Core hosting
+            services.AddQuartzServer(options =>
+        {
                 // when shutting down we want jobs to complete gracefully
                 options.WaitForJobsToComplete = true;
-            });
-
-
-            //services.AddSingleton<IScheduleManager, ScheduleManager>();
-
+        });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -146,15 +144,12 @@ namespace X.Scheduler.Shell
             });
 
             loggerFactory.AddFile("Logs/X.Scheduler_{Date}.txt");
-            //app.UseCors("SiteCorsPolicy");
 
             var applicationServices = app.ApplicationServices;
             var rulesManager = applicationServices.GetService<IRulesManager>();
-            //var scheduleManager = applicationServices.GetService<IScheduleManager>();
-           // app.ApplicationServices.GetService<IScheduleManager>();
+
             #region Initialization
             rulesManager.Initialize();
-            //scheduleManager.Initialize();
             #endregion  
 
         }

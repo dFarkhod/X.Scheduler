@@ -17,10 +17,8 @@ namespace X.Scheduler.Shell.Controllers
     [Route("api/[controller]")]
     public class ScheduleController : ApiControllerBase
     {
-
-        //todo: remove appDbContext here and also reference to the infrastructure from shell and replace it with MediatR
         private readonly ILogger<ScheduleController> Logger;
-        public ScheduleController(ApplicationDbContext appContext, ILogger<ScheduleController> logger, IAppRepository appRepository)
+        public ScheduleController(ILogger<ScheduleController> logger)
         {
             Logger = logger;
         }
