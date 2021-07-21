@@ -13,7 +13,6 @@ using X.Scheduler.Application.Queries;
 
 namespace X.Scheduler.Shell.Controllers
 {
-    [EnableCors("SiteCorsPolicy")]
     [Route("api/[controller]")]
     public class ScheduleController : ApiControllerBase
     {

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using X.Scheduler.Application;
 using X.Scheduler.Application.Managers;
 using X.Scheduler.Domain.Entities.Interfaces;
@@ -20,6 +21,7 @@ namespace X.Scheduler.Shell
         }
 
         public IConfiguration Configuration { get; }
+        private string CorsPolicyName = "CORS";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -36,8 +38,9 @@ namespace X.Scheduler.Shell
 
             services.AddCors(options =>
             {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder.AllowAnyOrigin()
+                options.AddPolicy(CorsPolicyName,
+                    builder => builder
+                                      .WithOrigins(Configuration.GetValue<string>("AllowedHosts").Split(";").ToArray())
                                       .AllowAnyMethod()
                                       .AllowAnyHeader());
             });
@@ -55,7 +58,7 @@ namespace X.Scheduler.Shell
             }
 
             app.UseRouting();
-            app.UseCors("CorsPolicy");
+            app.UseCors(CorsPolicyName);
 
             app.UseEndpoints(endpoints =>
             {
