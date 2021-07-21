@@ -1,18 +1,14 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using MediatR;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Quartz;
+using Microsoft.Extensions.Logging;
 using System;
-using MediatR;
-using X.Scheduler.Infrastructure.Persistence;
-using X.Scheduler.Domain.Entities.Interfaces;
-using X.Scheduler.Infrastructure.Persistence.Repositories;
-using X.Scheduler.Application.Managers;
-using X.Scheduler.Infrastructure;
 using X.Scheduler.Application;
+using X.Scheduler.Application.Managers;
+using X.Scheduler.Domain.Entities.Interfaces;
+using X.Scheduler.Infrastructure;
 
 namespace X.Scheduler.Shell
 {
@@ -28,11 +24,14 @@ namespace X.Scheduler.Shell
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMediatR(typeof(Startup));
+            //services.AddMediatR(typeof(Startup)); // because MediatR handlers are not located in the Shell project
+            var assembly = AppDomain.CurrentDomain.Load("X.Scheduler.Application");
+            services.AddMediatR(assembly);
+
             services.AddMvc();
             services.AddApplication(Configuration);
             services.AddInfrastructure(Configuration);
-
+            
             #region CORS
 
             services.AddCors(options =>
@@ -45,85 +44,6 @@ namespace X.Scheduler.Shell
             #endregion
 
             services.AddSingleton<IRulesManager, RulesManager>();
-
-            //todo: replace quartz with Hangfire!
-            services.AddQuartz(q =>
-            {
-                // base quartz scheduler, job and trigger configuration
-                // handy when part of cluster or you want to otherwise identify multiple schedulers
-                q.SchedulerId = "Scheduler-Core";
-
-                // we take this from appsettings.json, just show it's possible
-                // q.SchedulerName = "Quartz ASP.NET Core Sample Scheduler";
-
-                // we could leave DI configuration intact and then jobs need to have public no-arg constructor
-                // the MS DI is expected to produce transient job instances 
-                /*  q.UseMicrosoftDependencyInjectionJobFactory(options =>
-                  {
-                      // if we don't have the job in DI, allow fallback to configure via default constructor
-                      options.AllowDefaultConstructor = true;
-                  });*/
-
-                // or 
-                q.UseMicrosoftDependencyInjectionScopedJobFactory();
-
-                // these are the defaults
-                q.UseSimpleTypeLoader();
-
-                q.UseDefaultThreadPool(tp =>
-                {
-                    tp.MaxConcurrency = 10;
-                });
-
-                TimeSpan handleInterval = new TimeSpan(1, 0, 0);
-                TimeSpan.TryParse(Configuration["ScheduleGeneratorInterval"], out handleInterval);
-
-                // configure jobs with code
-                var jobKey = new JobKey("Schedule Generator Job", "Schedule Generator Job Group");
-                q.AddJob<ScheduleGeneratorJob>(j => j
-                    .StoreDurably()
-                    .WithIdentity(jobKey)
-                    .WithDescription("Schedule Generator Job")
-                );
-
-                q.AddTrigger(t => t
-                    .WithIdentity("Schedule Generator Job Trigger")
-                    .ForJob(jobKey)
-                    .StartNow()
-                    .WithSimpleSchedule(x => x.WithInterval(handleInterval).RepeatForever())
-                    .WithDescription("Schedule Generator Job Trigger")
-                );
-
-                // convert time zones using converter that can handle Windows/Linux differences
-                //q.UseTimeZoneConverter();
-                q.UseInMemoryStore();
-
-                /*q.UsePersistentStore(s =>
-                {
-                    s.UseProperties = true;
-                    s.RetryInterval = TimeSpan.FromSeconds(15);
-                    s.UseSqlServer(sqlServer =>
-                    {
-                        sqlServer.ConnectionString = Configuration.GetConnectionString("DefaultConnString");
-                        sqlServer.TablePrefix = "QRTZ_";
-                    });
-
-                    s.UseJsonSerializer();
-                    s.UseClustering(c =>
-                    {
-                        c.CheckinMisfireThreshold = TimeSpan.FromSeconds(20);
-                        c.CheckinInterval = TimeSpan.FromSeconds(10);
-                    });
-                });*/
-
-            });
-
-            // ASP.NET Core hosting
-            services.AddQuartzServer(options =>
-        {
-                // when shutting down we want jobs to complete gracefully
-                options.WaitForJobsToComplete = true;
-        });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -134,7 +54,6 @@ namespace X.Scheduler.Shell
                 app.UseDeveloperExceptionPage();
             }
 
-            // todo: implement caching
             app.UseRouting();
             app.UseCors("CorsPolicy");
 

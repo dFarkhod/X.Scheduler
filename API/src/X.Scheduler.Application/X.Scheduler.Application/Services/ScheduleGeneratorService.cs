@@ -1,65 +1,72 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Timers;
+using System.Threading;
 using System.Threading.Tasks;
-using Quartz;
-using X.Scheduler.Domain.Entities.Interfaces;
-using X.Scheduler.Domain.Entities;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using X.Scheduler.Domain;
+using X.Scheduler.Domain.Entities;
+using X.Scheduler.Domain.Entities.Interfaces;
 
-namespace X.Scheduler.Application.Managers
+namespace X.Scheduler.Application.Services
 {
-    [DisallowConcurrentExecution]
-    public class ScheduleGeneratorJob : BaseManager, IScheduleManager, IJob
+    public class ScheduleGeneratorService : BackgroundService
     {
-        private IRulesManager RulesManager = null;
+        private IRulesManager _rulesManager = null;
+        private IConfiguration _configuration;
+        private IAppRepository _scheduleRepo;
+        private ILogger<ScheduleGeneratorService> _logger;
+        private IServiceScopeFactory _serviceScopeFactory;
+        private IServiceScope _scope;
+
         private DateTime FirstWorkingDayDate = DateTime.Today;
         private List<Schedule> ActiveSchedule = new List<Schedule>();
         private bool NeedToGenerateNewSchedule = true;
         private int SchedulePeriodInDays = 14;
         private string FirstWorkingWeekDay = "Monday";
-        private IConfiguration Configuration;
-        private IAppRepository ScheduleRepo;
-        private ILogger<ScheduleGeneratorJob> Logger;
 
-        public ScheduleGeneratorJob(IRulesManager rm, IAppRepository repo, IConfiguration configuration, ILogger<ScheduleGeneratorJob> logger)
+        public ScheduleGeneratorService(IRulesManager rm, IConfiguration configuration, ILogger<ScheduleGeneratorService> logger, IServiceScopeFactory serviceScopeFactory)
         {
-            ScheduleRepo = repo;
-            RulesManager = rm;
-            Configuration = configuration;
-            Logger = logger;
+            _rulesManager = rm;
+            _configuration = configuration;
+            _logger = logger;
+            _serviceScopeFactory = serviceScopeFactory;
             Initialize();
         }
 
-        public override void Initialize()
+        private void Initialize()
         {
-            FirstWorkingWeekDay = Configuration["FirstWorkingWeekDay"];
+            FirstWorkingWeekDay = _configuration["FirstWorkingWeekDay"];
         }
 
         // todo: Convert this method to async
         private void HandleJob()
         {
-            GetFirstWorkingDayOfWeek();
-            HousekeepSchedules();
-            GenerateNewSchedule();
+            using (_scope = _serviceScopeFactory.CreateScope())
+            {
+                GetFirstWorkingDayOfWeek();
+                HousekeepSchedules();
+                GenerateNewSchedule();
+            }
         }
 
         private void HousekeepSchedules()
         {
-            if (ScheduleRepo.GetScheduleCount() == 0)
+            _scheduleRepo = _scope.ServiceProvider.GetRequiredService<IAppRepository>();
+            if (_scheduleRepo.GetScheduleCount() == 0)
             {
                 NeedToGenerateNewSchedule = true;
                 return;
             }
 
-            var latestScheduleRecord = ScheduleRepo.GetLatestScheduleRecord();
-            if (latestScheduleRecord != null && latestScheduleRecord < FirstWorkingDayDate)
+            var latestScheduleRecord = _scheduleRepo.GetLatestScheduleRecord();
+            if (latestScheduleRecord < FirstWorkingDayDate)
             {
                 var scheduleHistoryItems = new List<ScheduleHistory>();
-                var existingSchedules = ScheduleRepo.GetAllSchedules();
+                var existingSchedules = _scheduleRepo.GetAllSchedules();
                 foreach (var existingSchedule in existingSchedules)
                 {
                     ScheduleHistory shItem = new ScheduleHistory();
@@ -69,8 +76,8 @@ namespace X.Scheduler.Application.Managers
                     shItem.Date = existingSchedule.Date;
                     scheduleHistoryItems.Add(shItem);
                 }
-                ScheduleRepo.AddToHistory(scheduleHistoryItems);
-                ScheduleRepo.DeleteAllSchedules();
+                _scheduleRepo.AddToHistory(scheduleHistoryItems);
+                _scheduleRepo.DeleteAllSchedules();
                 NeedToGenerateNewSchedule = true;
             }
             else
@@ -86,12 +93,12 @@ namespace X.Scheduler.Application.Managers
 
             ValidateStaffsCount();
 
-            List<Staff> staffs = ScheduleRepo.GetAllStaff();
+            List<Staff> staffs = _scheduleRepo.GetAllStaff();
             int StaffsCount = staffs.Count();
             int scheduleItemsCount = SchedulePeriodInDays * 2;
             List<int> uniqueNumberList = GetUniqueNumbersList(StaffsCount, scheduleItemsCount);
 
-            List<int> staffIndexListWithRules = RulesManager.ApplyRules(uniqueNumberList, StaffsCount - 1);
+            List<int> staffIndexListWithRules = _rulesManager.ApplyRules(uniqueNumberList, StaffsCount - 1);
             GenerateSchedule(staffs, staffIndexListWithRules);
         }
 
@@ -143,23 +150,23 @@ namespace X.Scheduler.Application.Managers
                     currentItemIndex++;
                 }
 
-                ScheduleRepo.AddRange(ActiveSchedule);
+                _scheduleRepo.AddRange(ActiveSchedule);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Exception occured while Generating Schedule");
+                _logger.LogError(ex, "Exception occured while Generating Schedule");
                 throw;
             }
         }
 
         private bool ValidateStaffsCount()
         {
-            if (ScheduleRepo.GetStaffCount() <= 0)
+            if (_scheduleRepo.GetStaffCount() <= 0)
             {
                 throw new Exception("No any staff defined! Please define staff.");
             }
 
-            if (ScheduleRepo.GetStaffCount() < 2)
+            if (_scheduleRepo.GetStaffCount() < 2)
                 throw new Exception("Please define at least two staffs");
 
             return true;
@@ -198,7 +205,7 @@ namespace X.Scheduler.Application.Managers
             }
         }
 
-        public Task Execute(IJobExecutionContext context)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             HandleJob();
             return Task.CompletedTask;
