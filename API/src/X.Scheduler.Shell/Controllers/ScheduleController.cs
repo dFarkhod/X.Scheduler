@@ -23,9 +23,9 @@ namespace X.Scheduler.Shell.Controllers
         }
 
         [HttpGet]
-        public async Task<List<ScheduleDto>> GetAsync()
+        public async Task<IReadOnlyList<ScheduleDto>> GetAsync()
         {
-            List<ScheduleDto> scheduleWithStaff = await Mediator.Send(new GetScheduleListQuery());
+            IReadOnlyList<ScheduleDto> scheduleWithStaff = await Mediator.Send(new GetScheduleListQuery());
             Logger.LogInformation("Schedule list sent:" + JsonConvert.SerializeObject(scheduleWithStaff));
             return scheduleWithStaff;
         }

@@ -10,11 +10,11 @@ using X.Scheduler.Domain.Entities.Interfaces;
 
 namespace X.Scheduler.Application.Queries
 {
-    public class GetScheduleListQuery : IRequest<List<ScheduleDto>>
+    public class GetScheduleListQuery : IRequest<IReadOnlyList<ScheduleDto>>
     {
     }
 
-    public class GetScheduleListQueryHandler : IRequestHandler<GetScheduleListQuery, List<ScheduleDto>>
+    public class GetScheduleListQueryHandler : IRequestHandler<GetScheduleListQuery, IReadOnlyList<ScheduleDto>>
     {
         private readonly IAppRepository _appRepository;
 
@@ -22,16 +22,16 @@ namespace X.Scheduler.Application.Queries
         {
             _appRepository = appRepository;
         }
-        public Task<List<ScheduleDto>> Handle(GetScheduleListQuery request, CancellationToken cancellationToken)
+        public Task<IReadOnlyList<ScheduleDto>> Handle(GetScheduleListQuery request, CancellationToken cancellationToken)
         {
             IEnumerable<Schedule> schedule = _appRepository.GetAllSchedules();
             var result = MapStaffToSchedule(schedule);
             return Task.FromResult(result);
         }
 
-        private List<ScheduleDto> MapStaffToSchedule(IEnumerable<Schedule> schedule)
+        private IReadOnlyList<ScheduleDto> MapStaffToSchedule(IEnumerable<Schedule> schedule)
         {
-            List<ScheduleDto> scheduleWithStaff = new List<ScheduleDto>();
+            var scheduleWithStaff = new List<ScheduleDto>();
             foreach (var sws in schedule)
             {
                 var staff = _appRepository.GetStaffById(sws.StaffId);

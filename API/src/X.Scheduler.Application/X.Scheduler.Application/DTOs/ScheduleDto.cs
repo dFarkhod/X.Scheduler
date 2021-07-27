@@ -2,9 +2,8 @@
 
 namespace X.Scheduler.Application.DTOs
 {
-    public class ScheduleDto
+    public record ScheduleDto
     {
-
         public ScheduleDto(string staffFirstName, string staffLastName, string date, short shift, string columns)
         {
             this.staffFirstName = staffFirstName;
@@ -15,14 +14,14 @@ namespace X.Scheduler.Application.DTOs
         }
 
         [JsonIgnore]
-        private string staffFirstName { get; set; }
+        private string staffFirstName { get; }
 
         [JsonIgnore]
-        private string staffLastName { get; set; }
+        private string staffLastName { get; }
 
-        public string Date { get; set; }
+        public string Date { get; }
 
-        public short Shift { get; set; }
+        public short Shift { get; }
 
         public string Staff
         {
