@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using X.Scheduler.Application;
 using X.Scheduler.Application.Managers;
+using X.Scheduler.Application.Services;
 using X.Scheduler.Domain.Entities.Interfaces;
 using X.Scheduler.Infrastructure;
 
@@ -47,6 +48,7 @@ namespace X.Scheduler.Shell
             #endregion
 
             services.AddSingleton<IRulesManager, RulesManager>();
+            services.AddHostedService<ScheduleGeneratorService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
