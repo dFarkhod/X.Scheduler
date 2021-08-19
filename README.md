@@ -1,8 +1,10 @@
 # X.Scheduler
 A Scheduler solution for Company X
 The Solution consists of Web API and Web UI tiers.
-Web API project is created with Asp.Net Web API in .Net Core 2.1
-Web UI project is based on Angular 5.2.11
+Web API project is created with Asp.Net Web API in .Net Core
+Web UI project is based on Angular
+
+[![Build status](https://ci.appveyor.com/api/projects/status/q4qtfi4tvk5r6fa2?svg=true)](https://ci.appveyor.com/project/dFarkhod/x-scheduler)
 
 Here are the requirements:
 * Background 
